@@ -35,6 +35,7 @@
 		9F24FEF6161AB1DA00A93048 /* TentStatusClient.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F24FEF5161AB1D900A93048 /* TentStatusClient.m */; };
 		9F24FF01161AC6CF00A93048 /* TPTentHTTPClient.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F24FF00161AB80E00A93048 /* TPTentHTTPClient.m */; };
 		9FB912E3161ACAC20092FA0F /* StatusPost.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FB912E2161ACAC10092FA0F /* StatusPost.m */; };
+		9FB912EE161B0AC40092FA0F /* StatusPostCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FB912ED161B0AC40092FA0F /* StatusPostCell.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -89,6 +90,8 @@
 		9F24FF00161AB80E00A93048 /* TPTentHTTPClient.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TPTentHTTPClient.m; sourceTree = "<group>"; };
 		9FB912E1161ACAC10092FA0F /* StatusPost.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StatusPost.h; sourceTree = "<group>"; };
 		9FB912E2161ACAC10092FA0F /* StatusPost.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = StatusPost.m; sourceTree = "<group>"; };
+		9FB912EC161B0AC40092FA0F /* StatusPostCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StatusPostCell.h; sourceTree = "<group>"; };
+		9FB912ED161B0AC40092FA0F /* StatusPostCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = StatusPostCell.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -240,6 +243,8 @@
 			isa = PBXGroup;
 			children = (
 				9F24FC9D161AAC0200A93048 /* MainStoryboard.storyboard */,
+				9FB912EC161B0AC40092FA0F /* StatusPostCell.h */,
+				9FB912ED161B0AC40092FA0F /* StatusPostCell.m */,
 			);
 			name = Views;
 			sourceTree = "<group>";
@@ -354,6 +359,7 @@
 				9F24FEF6161AB1DA00A93048 /* TentStatusClient.m in Sources */,
 				9F24FF01161AC6CF00A93048 /* TPTentHTTPClient.m in Sources */,
 				9FB912E3161ACAC20092FA0F /* StatusPost.m in Sources */,
+				9FB912EE161B0AC40092FA0F /* StatusPostCell.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

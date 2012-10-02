@@ -9,6 +9,7 @@
 #import "TimelineViewController.h"
 #import "TentStatusClient.h"
 #import "StatusPost.h"
+#import "StatusPostCell.h"
 
 @interface TimelineViewController () <TPTentClientDelegate>
 
@@ -50,7 +51,7 @@
             StatusPost *statusPost = [[StatusPost alloc] init];
             NSDictionary *content = representation[@"content"];
             statusPost.status = content[@"text"];
-            statusPost.publishedAt = [NSDate dateWithTimeIntervalSince1970:[representation[@"published_at"] doubleValue]];
+            statusPost.publishedAtDate = [NSDate dateWithTimeIntervalSince1970:[representation[@"published_at"] doubleValue]];
             [postArray addObject:statusPost];
         }
         
@@ -60,6 +61,19 @@
     } failure:nil];
 }
 
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    // TODO: Fix this
+    StatusPostCell *cell = [tableView dequeueReusableCellWithIdentifier:@"StatusPostCell"];
+    StatusPost *statusPost = (StatusPost *)[self.statusArray objectAtIndex:indexPath.row];
+    cell.statusLabel.text = statusPost.status;
+    CGFloat cellHeight = cell.frame.size.height;
+    CGFloat labelHeight = 19.f;
+    CGFloat adjustedlabelHeight = [cell.statusLabel sizeThatFits:CGSizeMake(280.f, CGFLOAT_MAX)].height;
+    CGFloat adjustedCellHeight = cellHeight + (adjustedlabelHeight - labelHeight);
+    return adjustedCellHeight;
+}
+
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
     return [self.statusArray count];
@@ -67,9 +81,12 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"StatusPostCell"];
+    StatusPostCell *cell = [tableView dequeueReusableCellWithIdentifier:@"StatusPostCell"];
     StatusPost *statusPost = (StatusPost *)[self.statusArray objectAtIndex:indexPath.row];
-    cell.textLabel.text = statusPost.status;
+    cell.statusLabel.text = statusPost.status;
+    cell.publishedAtLabel.text = [NSDateFormatter localizedStringFromDate:statusPost.publishedAtDate
+                                                                dateStyle:NSDateFormatterShortStyle
+                                                                timeStyle:NSDateFormatterShortStyle];
     return cell;
 }
 

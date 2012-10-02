@@ -10,7 +10,7 @@
 
 @interface StatusPost : NSObject
 
-@property (nonatomic, strong) NSDate *publishedAt;
+@property (nonatomic, strong) NSDate *publishedAtDate;
 @property (nonatomic, strong) NSString *status;
 
 @end

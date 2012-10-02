@@ -8,19 +8,47 @@
         <scene sceneID="oyc-iG-4Uy">
             <objects>
                 <tableViewController id="jN9-S8-eBF" customClass="TimelineViewController" sceneMemberID="viewController">
-                    <tableView key="view" opaque="NO" clipsSubviews="YES" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" rowHeight="44" sectionHeaderHeight="22" sectionFooterHeight="22" id="v6I-aC-1wn">
+                    <tableView key="view" opaque="NO" clipsSubviews="YES" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" rowHeight="86" sectionHeaderHeight="22" sectionFooterHeight="22" id="v6I-aC-1wn">
                         <rect key="frame" x="0.0" y="64" width="320" height="504"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         <prototypes>
-                            <tableViewCell contentMode="scaleToFill" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="StatusPostCell" rowHeight="44" id="fLv-ew-ZnT">
-                                <rect key="frame" x="0.0" y="22" width="320" height="44"/>
+                            <tableViewCell contentMode="scaleToFill" selectionStyle="none" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="StatusPostCell" rowHeight="86" id="fLv-ew-ZnT" customClass="StatusPostCell">
+                                <rect key="frame" x="0.0" y="22" width="320" height="86"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
-                                    <rect key="frame" x="0.0" y="0.0" width="320" height="43"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="320" height="85"/>
                                     <autoresizingMask key="autoresizingMask"/>
+                                    <subviews>
+                                        <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" text="Label" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" preferredMaxLayoutWidth="280" translatesAutoresizingMaskIntoConstraints="NO" id="tGY-7H-OxI">
+                                            <fontDescription key="fontDescription" type="system" pointSize="13"/>
+                                            <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
+                                            <color key="highlightedColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                        </label>
+                                        <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" text="Label" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="6l7-GA-UZM">
+                                            <constraints>
+                                                <constraint firstAttribute="height" constant="20" type="user" id="mhg-E4-gd9"/>
+                                            </constraints>
+                                            <fontDescription key="fontDescription" type="system" pointSize="13"/>
+                                            <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
+                                            <color key="highlightedColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                        </label>
+                                    </subviews>
                                     <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                                 </view>
+                                <constraints>
+                                    <constraint firstAttribute="trailing" secondItem="6l7-GA-UZM" secondAttribute="trailing" constant="20" type="default" id="4bw-df-twm"/>
+                                    <constraint firstItem="6l7-GA-UZM" firstAttribute="leading" secondItem="fLv-ew-ZnT" secondAttribute="leading" constant="20" type="default" id="McS-TM-c6Z"/>
+                                    <constraint firstAttribute="trailing" secondItem="tGY-7H-OxI" secondAttribute="trailing" constant="20" type="default" id="OKN-20-pFO"/>
+                                    <constraint firstItem="6l7-GA-UZM" firstAttribute="top" secondItem="fLv-ew-ZnT" secondAttribute="top" constant="16" type="user" id="XTv-fk-gJy"/>
+                                    <constraint firstAttribute="bottom" secondItem="tGY-7H-OxI" secondAttribute="bottom" constant="23" type="user" id="jgx-ms-vAL"/>
+                                    <constraint firstItem="tGY-7H-OxI" firstAttribute="leading" secondItem="fLv-ew-ZnT" secondAttribute="leading" constant="20" type="default" id="p7F-nQ-Y87"/>
+                                    <constraint firstItem="tGY-7H-OxI" firstAttribute="top" secondItem="6l7-GA-UZM" secondAttribute="bottom" constant="8" symbolic="YES" type="user" id="uR1-iW-ETq"/>
+                                </constraints>
+                                <connections>
+                                    <outlet property="publishedAtLabel" destination="6l7-GA-UZM" id="MbC-Ci-ozZ"/>
+                                    <outlet property="statusLabel" destination="tGY-7H-OxI" id="QW7-ue-EAd"/>
+                                </connections>
                             </tableViewCell>
                         </prototypes>
                         <connections>
@@ -53,6 +81,21 @@
             <point key="canvasLocation" x="128" y="56"/>
         </scene>
     </scenes>
+    <classes>
+        <class className="NSLayoutConstraint" superclassName="NSObject">
+            <source key="sourceIdentifier" type="project" relativePath="./Classes/NSLayoutConstraint.h"/>
+        </class>
+        <class className="StatusPostCell" superclassName="UITableViewCell">
+            <source key="sourceIdentifier" type="project" relativePath="./Classes/StatusPostCell.h"/>
+            <relationships>
+                <relationship kind="outlet" name="publishedAtLabel" candidateClass="UILabel"/>
+                <relationship kind="outlet" name="statusLabel" candidateClass="UILabel"/>
+            </relationships>
+        </class>
+        <class className="TimelineViewController" superclassName="UITableViewController">
+            <source key="sourceIdentifier" type="project" relativePath="./Classes/TimelineViewController.h"/>
+        </class>
+    </classes>
     <simulatedMetricsContainer key="defaultSimulatedMetrics">
         <simulatedStatusBarMetrics key="statusBar"/>
         <simulatedOrientationMetrics key="orientation"/>

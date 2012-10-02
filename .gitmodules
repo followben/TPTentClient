@@ -1,0 +1,6 @@
+[submodule "Example/Vendor/SSToolkit"]
+	path = Example/Vendor/SSToolkit
+	url = git://github.com/samsoffes/sstoolkit.git
+[submodule "Example/Vendor/AFNetworking"]
+	path = Example/Vendor/AFNetworking
+	url = git://github.com/AFNetworking/AFNetworking.git

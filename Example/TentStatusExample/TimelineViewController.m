@@ -25,12 +25,12 @@
     
     NSURL *entityURL = [NSURL URLWithString:@"https://followben.tent.is/tent"];
     
-    if (![[TentStatusClient sharedClient] isRegisteredWithEntityURL:entityURL]) {
-        [[TentStatusClient sharedClient] registerWithEntityURL:entityURL];
+    if (![[TentStatusClient sharedClient] isAuthorizedWithEntityURL:entityURL]) {
+        [[TentStatusClient sharedClient] authorizeWithEntityURL:entityURL];
     }
     
     [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(registeredWithTentity:)
+                                             selector:@selector(didAuthorizeWithEntity:)
                                                  name:TPTentClientDidRegisterWithEntityNotification
                                                object:nil];
 }
@@ -40,7 +40,7 @@
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
-- (void)registeredWithTentity:(NSDictionary *)notification
+- (void)didAuthorizeWithEntity:(NSDictionary *)notification
 {
     __weak TimelineViewController *weakSelf = self;
     

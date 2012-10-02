@@ -19,8 +19,8 @@
 @property (nonatomic, strong) NSURL *appWebsiteURL;
 @property (nonatomic, strong) NSDictionary *scopes;
 
-- (BOOL)isRegisteredWithEntityURL:(NSURL *)url;
-- (void)registerWithEntityURL:(NSURL *)url;
+- (BOOL)isAuthorizedWithEntityURL:(NSURL *)url;
+- (void)authorizeWithEntityURL:(NSURL *)url;
 
 - (BOOL)handleOpenURL:(NSURL *)url;
 
@@ -34,5 +34,5 @@ extern NSString * const TPTentClientDidRegisterWithEntityURL;
 
 @protocol TPTentClientDelegate <NSObject>
 @optional
-- (void)tentClient:(TPTentClient *)tentClient didRegisterWithEntityURL:(NSURL *)url;
+- (void)tentClient:(TPTentClient *)tentClient didAuthorizeWithEntityURL:(NSURL *)url;
 @end

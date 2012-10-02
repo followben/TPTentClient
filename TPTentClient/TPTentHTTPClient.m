@@ -219,21 +219,26 @@ static NSString *const kTPTentContentType = @"application/vnd.tent.v0+json";
     }
     
     long secs = round([[NSDate date] timeIntervalSince1970]);
-    NSString *timeStamp = [NSString stringWithFormat:@"%ld\n", secs];
+    NSString *timeStamp = [NSString stringWithFormat:@"%ld", secs];
     NSString *nonce = [[[NSProcessInfo processInfo] globallyUniqueString] stringByReplacingOccurrencesOfString:@"-" withString:@""];
     
     // Create the normalised request string (http://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-01#section-3.2.1)
     NSMutableString *normalisedRequestString = [NSMutableString stringWithString:timeStamp];
-    [normalisedRequestString appendFormat:@"%@\n", nonce];
+    [normalisedRequestString appendFormat:@"\n%@\n", nonce];
     [normalisedRequestString appendFormat:@"%@\n", request.HTTPMethod];
-    [normalisedRequestString appendFormat:@"%@\n", [request.URL absoluteString]];
-    [normalisedRequestString appendFormat:@"%@\n", [request.URL host]];
-    [normalisedRequestString appendFormat:@"%@\n\n", [[request.URL port] stringValue]];
+    [normalisedRequestString appendFormat:@"%@\n", request.URL.path];
+    [normalisedRequestString appendFormat:@"%@\n", request.URL.host];
+    
+    NSString *port = [request.URL.port stringValue];
+    if (!port) {
+        port = ([request.URL.scheme isEqualToString:@"http"]) ? @"80" : @"443";
+    }
+    [normalisedRequestString appendFormat:@"%@\n\n", port];
     
     NSString *mac = [NSString HMACSHA256EncodedStringWithString:normalisedRequestString key:self.tentMacKey];
     NSString *authorizationId = (self.tentAccessToken.length > 0) ? self.tentAccessToken : self.tentMacKeyId;
     
-    return [NSString stringWithFormat:@"MAC id='%@', ts='%@', nonce='%@', mac='%@'", authorizationId, timeStamp, nonce, mac];
+    return [NSString stringWithFormat:@"MAC id=\"%@\", ts=\"%@\", nonce=\"%@\", mac=\"%@\"", authorizationId, timeStamp, nonce, mac];
 }
 
 - (BOOL)mainBundleContainsURLScheme:(NSString *)urlScheme

@@ -23,7 +23,7 @@ NSString * const TPTentClientDidRegisterWithEntityURL = @"TPTentClientDidRegiste
 
 #pragma mark - Public methods
 
-- (BOOL)isRegisteredWithEntityURL:(NSURL *)url
+- (BOOL)isAuthorizedWithEntityURL:(NSURL *)url
 {
     if (self.httpClient && [self.httpClient.baseURL isEqual:url] && [self.httpClient isRegisteredWithBaseURL]) {
         return YES;
@@ -32,7 +32,7 @@ NSString * const TPTentClientDidRegisterWithEntityURL = @"TPTentClientDidRegiste
     return NO;
 }
 
-- (void)registerWithEntityURL:(NSURL *)url
+- (void)authorizeWithEntityURL:(NSURL *)url
 {
     if (self.httpClient.isRegisteredWithBaseURL && [self.httpClient.baseURL isEqual:url]) {
         return;
@@ -57,8 +57,8 @@ NSString * const TPTentClientDidRegisterWithEntityURL = @"TPTentClientDidRegiste
                                                         object:nil
                                                       userInfo:@{TPTentClientDidRegisterWithEntityNotification: httpClient.baseURL}];
     
-    if ([self.delegate respondsToSelector:@selector(tentClient:didRegisterWithEntityURL:)]) {
-        [self.delegate tentClient:self didRegisterWithEntityURL:httpClient.baseURL];
+    if ([self.delegate respondsToSelector:@selector(tentClient:didAuthorizeWithEntityURL:)]) {
+        [self.delegate tentClient:self didAuthorizeWithEntityURL:httpClient.baseURL];
     }
 }
 

@@ -11,7 +11,7 @@
 @interface StatusPostCell : UITableViewCell
 
 @property (nonatomic, weak) IBOutlet UILabel *statusLabel;
-@property (nonatomic, weak) IBOutlet UILabel *entityNameLabel;
+@property (nonatomic, weak) IBOutlet UILabel *entityLabel;
 @property (nonatomic, weak) IBOutlet UILabel *publishedAtLabel;
 
 @end

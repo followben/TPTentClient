@@ -23,25 +23,6 @@
 {
     [super viewDidLoad];
     
-    NSURL *entityURL = [NSURL URLWithString:@"https://followben.tent.is/tent"];
-    
-    if (![[TentStatusClient sharedClient] isAuthorizedWithEntityURL:entityURL]) {
-        [[TentStatusClient sharedClient] authorizeWithEntityURL:entityURL];
-    }
-    
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(didAuthorizeWithEntity:)
-                                                 name:TPTentClientDidRegisterWithEntityNotification
-                                               object:nil];
-}
-    
-- (void)viewDidUnload
-{
-    [[NSNotificationCenter defaultCenter] removeObserver:self];
-}
-
-- (void)didAuthorizeWithEntity:(NSDictionary *)notification
-{
     __weak TimelineViewController *weakSelf = self;
     
     [[TentStatusClient sharedClient] postRepresentationsWithSuccess:^(NSArray *representations) {
@@ -50,9 +31,10 @@
         for (NSDictionary *representation in representations) {
             if ([representation[@"type"] isEqualToString:TPTentClientPostTypeStatus]) {
                 StatusPost *statusPost = [[StatusPost alloc] init];
+                statusPost.entityURI = representation[@"entity"];
+                statusPost.publishedAtDate = [NSDate dateWithTimeIntervalSince1970:[representation[@"published_at"] doubleValue]];
                 NSDictionary *content = representation[@"content"];
                 statusPost.status = content[@"text"];
-                statusPost.publishedAtDate = [NSDate dateWithTimeIntervalSince1970:[representation[@"published_at"] doubleValue]];
                 [postArray addObject:statusPost];
             }
         }
@@ -86,6 +68,7 @@
     StatusPostCell *cell = [tableView dequeueReusableCellWithIdentifier:@"StatusPostCell"];
     StatusPost *statusPost = (StatusPost *)[self.statusArray objectAtIndex:indexPath.row];
     cell.statusLabel.text = statusPost.status;
+    cell.entityLabel.text = statusPost.entityURI;
     cell.publishedAtLabel.text = [NSDateFormatter localizedStringFromDate:statusPost.publishedAtDate
                                                                 dateStyle:NSDateFormatterShortStyle
                                                                 timeStyle:NSDateFormatterShortStyle];

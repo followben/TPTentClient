@@ -11,6 +11,7 @@
 @interface StatusPost : NSObject
 
 @property (nonatomic, strong) NSDate *publishedAtDate;
+@property (nonatomic, strong) NSString *entityURI;
 @property (nonatomic, strong) NSString *status;
 
 @end

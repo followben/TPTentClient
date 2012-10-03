@@ -34,6 +34,7 @@
 		9F24FEF3161AB0C500A93048 /* UIImageView+AFNetworking.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F24FEEA161AB0C500A93048 /* UIImageView+AFNetworking.m */; };
 		9F24FEF6161AB1DA00A93048 /* TentStatusClient.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F24FEF5161AB1D900A93048 /* TentStatusClient.m */; };
 		9F24FF01161AC6CF00A93048 /* TPTentHTTPClient.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F24FF00161AB80E00A93048 /* TPTentHTTPClient.m */; };
+		9F83DF20161BC0AC0078F22C /* AccountViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F83DF1F161BC0AC0078F22C /* AccountViewController.m */; };
 		9FB912E3161ACAC20092FA0F /* StatusPost.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FB912E2161ACAC10092FA0F /* StatusPost.m */; };
 		9FB912EE161B0AC40092FA0F /* StatusPostCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 9FB912ED161B0AC40092FA0F /* StatusPostCell.m */; };
 /* End PBXBuildFile section */
@@ -88,6 +89,8 @@
 		9F24FEF5161AB1D900A93048 /* TentStatusClient.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TentStatusClient.m; sourceTree = "<group>"; };
 		9F24FEFF161AB80E00A93048 /* TPTentHTTPClient.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TPTentHTTPClient.h; sourceTree = "<group>"; };
 		9F24FF00161AB80E00A93048 /* TPTentHTTPClient.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TPTentHTTPClient.m; sourceTree = "<group>"; };
+		9F83DF1E161BC0AC0078F22C /* AccountViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AccountViewController.h; sourceTree = "<group>"; };
+		9F83DF1F161BC0AC0078F22C /* AccountViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AccountViewController.m; sourceTree = "<group>"; };
 		9FB912E1161ACAC10092FA0F /* StatusPost.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StatusPost.h; sourceTree = "<group>"; };
 		9FB912E2161ACAC10092FA0F /* StatusPost.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = StatusPost.m; sourceTree = "<group>"; };
 		9FB912EC161B0AC40092FA0F /* StatusPostCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StatusPostCell.h; sourceTree = "<group>"; };
@@ -252,6 +255,8 @@
 		9FB912E7161ACAF30092FA0F /* Controllers */ = {
 			isa = PBXGroup;
 			children = (
+				9F83DF1E161BC0AC0078F22C /* AccountViewController.h */,
+				9F83DF1F161BC0AC0078F22C /* AccountViewController.m */,
 				9F24FCA0161AAC0200A93048 /* TimelineViewController.h */,
 				9F24FCA1161AAC0200A93048 /* TimelineViewController.m */,
 			);
@@ -360,6 +365,7 @@
 				9F24FF01161AC6CF00A93048 /* TPTentHTTPClient.m in Sources */,
 				9FB912E3161ACAC20092FA0F /* StatusPost.m in Sources */,
 				9FB912EE161B0AC40092FA0F /* StatusPostCell.m in Sources */,
+				9F83DF20161BC0AC0078F22C /* AccountViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

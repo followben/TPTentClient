@@ -4,7 +4,7 @@
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="1926"/>
     </dependencies>
     <scenes>
-        <!--Timeline View Controller-->
+        <!--Timeline View Controller - Timeline-->
         <scene sceneID="oyc-iG-4Uy">
             <objects>
                 <tableViewController id="jN9-S8-eBF" customClass="TimelineViewController" sceneMemberID="viewController">
@@ -57,7 +57,7 @@
                                     <constraint firstItem="tGY-7H-OxI" firstAttribute="top" secondItem="6l7-GA-UZM" secondAttribute="bottom" constant="8" symbolic="YES" type="user" id="uR1-iW-ETq"/>
                                 </constraints>
                                 <connections>
-                                    <outlet property="entityNameLabel" destination="YNs-yK-uKV" id="Y28-D9-Jsu"/>
+                                    <outlet property="entityLabel" destination="YNs-yK-uKV" id="fVH-Vx-LIb"/>
                                     <outlet property="publishedAtLabel" destination="6l7-GA-UZM" id="MbC-Ci-ozZ"/>
                                     <outlet property="statusLabel" destination="tGY-7H-OxI" id="QW7-ue-EAd"/>
                                 </connections>
@@ -68,11 +68,68 @@
                             <outlet property="delegate" destination="jN9-S8-eBF" id="xq4-jR-dkJ"/>
                         </connections>
                     </tableView>
-                    <navigationItem key="navigationItem" id="Dfa-pZ-g8j"/>
+                    <navigationItem key="navigationItem" title="Timeline" id="Dfa-pZ-g8j"/>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="66c-TQ-eIK" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="564" y="56"/>
+            <point key="canvasLocation" x="986" y="56"/>
+        </scene>
+        <!--Account View Controller - Tent Server-->
+        <scene sceneID="Lc4-Es-9Ke">
+            <objects>
+                <tableViewController id="WdH-tn-8Ga" customClass="AccountViewController" sceneMemberID="viewController">
+                    <tableView key="view" opaque="NO" clipsSubviews="YES" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="static" style="grouped" separatorStyle="singleLineEtched" rowHeight="44" sectionHeaderHeight="10" sectionFooterHeight="10" id="cGR-oa-x3b">
+                        <rect key="frame" x="0.0" y="64" width="320" height="504"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <color key="backgroundColor" cocoaTouchSystemColor="groupTableViewBackgroundColor"/>
+                        <sections>
+                            <tableViewSection id="nFr-59-R4T">
+                                <cells>
+                                    <tableViewCell contentMode="scaleToFill" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" id="bfX-wd-u5J">
+                                        <rect key="frame" x="0.0" y="10" width="320" height="46"/>
+                                        <autoresizingMask key="autoresizingMask"/>
+                                        <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
+                                            <rect key="frame" x="10" y="1" width="300" height="43"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <subviews>
+                                                <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" placeholder="Tent Entity URI" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="sJ0-yg-MbO">
+                                                    <constraints>
+                                                        <constraint firstAttribute="height" constant="30" id="ML8-Qx-Rqi"/>
+                                                        <constraint firstAttribute="width" constant="260" id="Q5b-P7-I8w"/>
+                                                    </constraints>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="15"/>
+                                                    <textInputTraits key="textInputTraits" autocorrectionType="no" keyboardType="URL" returnKeyType="go" enablesReturnKeyAutomatically="YES"/>
+                                                    <connections>
+                                                        <outlet property="delegate" destination="WdH-tn-8Ga" id="oOz-lr-RCG"/>
+                                                    </connections>
+                                                </textField>
+                                            </subviews>
+                                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                                        </view>
+                                        <constraints>
+                                            <constraint firstItem="sJ0-yg-MbO" firstAttribute="centerY" secondItem="bfX-wd-u5J" secondAttribute="centerY" type="default" id="9g1-1a-0MC"/>
+                                            <constraint firstItem="sJ0-yg-MbO" firstAttribute="centerX" secondItem="bfX-wd-u5J" secondAttribute="centerX" type="default" id="qea-vs-oKp"/>
+                                        </constraints>
+                                    </tableViewCell>
+                                </cells>
+                            </tableViewSection>
+                        </sections>
+                        <connections>
+                            <outlet property="dataSource" destination="WdH-tn-8Ga" id="Qid-bv-GdJ"/>
+                            <outlet property="delegate" destination="WdH-tn-8Ga" id="8U8-BA-wWh"/>
+                        </connections>
+                    </tableView>
+                    <navigationItem key="navigationItem" title="Tent Server" id="fol-ee-SVh">
+                        <barButtonItem key="backBarButtonItem" title="Account" id="H54-Z0-2OT"/>
+                    </navigationItem>
+                    <connections>
+                        <outlet property="entityURIField" destination="sJ0-yg-MbO" id="EDz-pb-Udc"/>
+                        <segue destination="jN9-S8-eBF" kind="push" identifier="ShowTimeline" id="ame-zZ-DTE"/>
+                    </connections>
+                </tableViewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="cNn-Ad-eoB" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="570" y="56"/>
         </scene>
         <!--Navigation Controller-->
         <scene sceneID="IsO-0Q-631">
@@ -85,7 +142,7 @@
                     </navigationBar>
                     <nil name="viewControllers"/>
                     <connections>
-                        <segue destination="jN9-S8-eBF" kind="relationship" relationship="rootViewController" id="Dki-1N-T9W"/>
+                        <segue destination="WdH-tn-8Ga" kind="relationship" relationship="rootViewController" id="bSc-hy-5Kc"/>
                     </connections>
                 </navigationController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="UtW-c4-740" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -94,13 +151,19 @@
         </scene>
     </scenes>
     <classes>
+        <class className="AccountViewController" superclassName="UITableViewController">
+            <source key="sourceIdentifier" type="project" relativePath="./Classes/AccountViewController.h"/>
+            <relationships>
+                <relationship kind="outlet" name="entityURIField" candidateClass="UITextField"/>
+            </relationships>
+        </class>
         <class className="NSLayoutConstraint" superclassName="NSObject">
             <source key="sourceIdentifier" type="project" relativePath="./Classes/NSLayoutConstraint.h"/>
         </class>
         <class className="StatusPostCell" superclassName="UITableViewCell">
             <source key="sourceIdentifier" type="project" relativePath="./Classes/StatusPostCell.h"/>
             <relationships>
-                <relationship kind="outlet" name="entityNameLabel" candidateClass="UILabel"/>
+                <relationship kind="outlet" name="entityLabel" candidateClass="UILabel"/>
                 <relationship kind="outlet" name="publishedAtLabel" candidateClass="UILabel"/>
                 <relationship kind="outlet" name="statusLabel" candidateClass="UILabel"/>
             </relationships>

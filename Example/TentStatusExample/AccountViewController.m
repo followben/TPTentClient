@@ -43,6 +43,8 @@
 
 - (BOOL)textFieldShouldReturn:(UITextField *)textField
 {
+    // TODO: Simplify discovery/ auth process
+    
     NSURL *entityURL = [NSURL URLWithString:textField.text];
     if (!entityURL) {
         return NO;

@@ -104,7 +104,7 @@ NSString * const TPTentClientDidRegisterWithEntityNotificationURLKey = @"TPTentC
 
 - (NSURL *)canonicalTentServerURLForProfileLink:(NSString *)profileLink
 {
-    // TODO - Lookup canonical URL. Just parsing the profile link for now
+    // TODO: Lookup canonical URL. Just parsing the profile link for now
     NSScanner *scanner = [NSScanner scannerWithString:profileLink];
     NSString *profileURLString;
     [scanner scanUpToString:@"http" intoString:nil];

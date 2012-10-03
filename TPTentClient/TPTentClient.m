@@ -7,6 +7,7 @@
 
 #import "TPTentClient.h"
 #import "TPTentHTTPClient.h"
+#import "NSURL+TPEquivalence.h"
 #import "AFJSONRequestOperation.h"
 
 
@@ -25,29 +26,6 @@ NSString * const TPTentClientDidRegisterWithEntityNotification = @"com.thoughtfu
 NSString * const TPTentClientDidRegisterWithEntityNotificationURLKey = @"TPTentClientDidRegisterWithEntityURL";
 
 
-#pragma mark - NSURL comparison extensions
-
-@interface NSURL (TPEquivalence)
-
-- (BOOL)isEquivalent:(NSURL *)aURL;
-
-@end
-
-@implementation NSURL (TPEquivalence)
-
-- (BOOL)isEquivalent:(NSURL *)aURL {
-    if ([self isEqual:aURL]) return YES;
-    if ([[self scheme] caseInsensitiveCompare:[aURL scheme]] != NSOrderedSame) return NO;
-    if ([[self host] caseInsensitiveCompare:[aURL host]] != NSOrderedSame) return NO;
-    if ([[self path] compare:[aURL path]] != NSOrderedSame) return NO;
-    if ([[self port] compare:[aURL port]] != NSOrderedSame) return NO;
-    if ([[self query] compare:[aURL query]] != NSOrderedSame) return NO;
-    return YES;
-}
-
-@end
-
-
 #pragma mark 
 
 @interface TPTentClient ()
@@ -61,7 +39,7 @@ NSString * const TPTentClientDidRegisterWithEntityNotificationURLKey = @"TPTentC
 
 #pragma mark - Public methods
 
-- (BOOL)isAuthorizedWithEntityURL:(NSURL *)url
+- (BOOL)isAuthorizedWithTentServer:(NSURL *)url
 {
     if (self.httpClient && [self.httpClient.baseURL isEquivalent:url] && [self.httpClient isRegisteredWithBaseURL]) {
         return YES;
@@ -70,7 +48,7 @@ NSString * const TPTentClientDidRegisterWithEntityNotificationURLKey = @"TPTentC
     return NO;
 }
 
-- (void)authorizeWithEntityURL:(NSURL *)url
+- (void)authorizeWithTentServer:(NSURL *)url
 {
     if (self.httpClient.isRegisteredWithBaseURL && [self.httpClient.baseURL isEqual:url]) {
         return;
@@ -98,6 +76,44 @@ NSString * const TPTentClientDidRegisterWithEntityNotificationURLKey = @"TPTentC
     if ([self.delegate respondsToSelector:@selector(tentClient:didAuthorizeWithEntityURL:)]) {
         [self.delegate tentClient:self didAuthorizeWithEntityURL:httpClient.baseURL];
     }
+}
+
+- (void)discoverTentServerForEntity:(NSURL *)url
+                            success:(void (^)(NSURL *tentServerURL))success
+                            failure:(void (^)(NSError *error))failure
+{
+    AFHTTPClient *discoveryHTTPClient = [[AFHTTPClient alloc] initWithBaseURL:url];
+    
+    NSMutableURLRequest *request = [discoveryHTTPClient requestWithMethod:@"HEAD" path:@"/" parameters:nil];
+    
+    AFJSONRequestOperation *operation = [AFJSONRequestOperation JSONRequestOperationWithRequest:request success:^(NSURLRequest *request, NSHTTPURLResponse *response, id JSON) {
+        
+        NSURL *tentServerURL = [self canonicalTentServerURLForProfileLink:[[response allHeaderFields] valueForKey:@"Link"]];
+        if (tentServerURL && success) {
+            success(tentServerURL);
+        }
+        
+    } failure:^(NSURLRequest *request, NSHTTPURLResponse *response, NSError *error, id JSON) {
+        if (failure) {
+            failure(error);
+        }
+    }];
+    
+    [discoveryHTTPClient enqueueHTTPRequestOperation:operation];
+}
+
+- (NSURL *)canonicalTentServerURLForProfileLink:(NSString *)profileLink
+{
+    // TODO - Lookup canonical URL. Just parsing the profile link for now
+    NSScanner *scanner = [NSScanner scannerWithString:profileLink];
+    NSString *profileURLString;
+    [scanner scanUpToString:@"http" intoString:nil];
+    if (![scanner isAtEnd]) {
+        [scanner scanUpToString:@">" intoString:&profileURLString];
+    }
+    NSMutableString *serverURLString = [profileURLString mutableCopy];
+    [serverURLString deleteCharactersInRange:NSMakeRange(serverURLString.length - [@"/profile" length], [@"/profile" length])];
+    return [NSURL URLWithString:serverURLString];
 }
 
 - (void)postRepresentationsWithSuccess:(void (^)(NSArray *statusRepresentations))success

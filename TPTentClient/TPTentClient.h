@@ -19,10 +19,14 @@
 @property (nonatomic, strong) NSURL *appWebsiteURL;
 @property (nonatomic, strong) NSDictionary *scopes;
 
-- (BOOL)isAuthorizedWithEntityURL:(NSURL *)url;
-- (void)authorizeWithEntityURL:(NSURL *)url;
+- (BOOL)isAuthorizedWithTentServer:(NSURL *)url;
+- (void)authorizeWithTentServer:(NSURL *)url;
 
 - (BOOL)handleOpenURL:(NSURL *)url;
+
+- (void)discoverTentServerForEntity:(NSURL *)url
+                            success:(void (^)(NSURL *tentServerURL))success
+                            failure:(void (^)(NSError *error))failure;
 
 - (void)postRepresentationsWithSuccess:(void (^)(NSArray *statusRepresentations))success
                                failure:(void (^)(NSError *error))failure;

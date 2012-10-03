@@ -9,6 +9,9 @@
 #import "TPTentHTTPClient.h"
 #import "AFJSONRequestOperation.h"
 
+
+#pragma mark - Constants
+
 NSString * const TPTentClientPostTypeStatus = @"https://tent.io/types/post/status/v0.1.0";
 NSString * const TPTentClientPostTypeEssay = @"https://tent.io/types/post/essay/v0.1.0";
 NSString * const TPTentClientPostTypePhoto = @"https://tent.io/types/post/photo/v0.1.0";
@@ -20,6 +23,32 @@ NSString * const TPTentClientPostTypeDeleteNotification = @"https://tent.io/type
 
 NSString * const TPTentClientDidRegisterWithEntityNotification = @"com.thoughtfulpixel.tptentclient.notification.didregisterwithentity";
 NSString * const TPTentClientDidRegisterWithEntityNotificationURLKey = @"TPTentClientDidRegisterWithEntityURL";
+
+
+#pragma mark - NSURL comparison extensions
+
+@interface NSURL (TPEquivalence)
+
+- (BOOL)isEquivalent:(NSURL *)aURL;
+
+@end
+
+@implementation NSURL (TPEquivalence)
+
+- (BOOL)isEquivalent:(NSURL *)aURL {
+    if ([self isEqual:aURL]) return YES;
+    if ([[self scheme] caseInsensitiveCompare:[aURL scheme]] != NSOrderedSame) return NO;
+    if ([[self host] caseInsensitiveCompare:[aURL host]] != NSOrderedSame) return NO;
+    if ([[self path] compare:[aURL path]] != NSOrderedSame) return NO;
+    if ([[self port] compare:[aURL port]] != NSOrderedSame) return NO;
+    if ([[self query] compare:[aURL query]] != NSOrderedSame) return NO;
+    return YES;
+}
+
+@end
+
+
+#pragma mark 
 
 @interface TPTentClient ()
 
@@ -34,7 +63,7 @@ NSString * const TPTentClientDidRegisterWithEntityNotificationURLKey = @"TPTentC
 
 - (BOOL)isAuthorizedWithEntityURL:(NSURL *)url
 {
-    if (self.httpClient && [self.httpClient.baseURL isEqual:url] && [self.httpClient isRegisteredWithBaseURL]) {
+    if (self.httpClient && [self.httpClient.baseURL isEquivalent:url] && [self.httpClient isRegisteredWithBaseURL]) {
         return YES;
     }
     

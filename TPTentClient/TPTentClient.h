@@ -29,8 +29,18 @@
 
 @end
 
+// Tent post types
+extern NSString * const TPTentClientPostTypeStatus;
+extern NSString * const TPTentClientPostTypeEssay;
+extern NSString * const TPTentClientPostTypePhoto;
+extern NSString * const TPTentClientPostTypeAlbum;
+extern NSString * const TPTentClientPostTypeRepost;
+extern NSString * const TPTentClientPostTypeProfileModification;
+extern NSString * const TPTentClientPostTypeDeleteNotification;
+
+// Notifications and UserInfo dict keys
 extern NSString * const TPTentClientDidRegisterWithEntityNotification;
-extern NSString * const TPTentClientDidRegisterWithEntityURL;
+extern NSString * const TPTentClientDidRegisterWithEntityNotificationURLKey;
 
 @protocol TPTentClientDelegate <NSObject>
 @optional

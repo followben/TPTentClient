@@ -9,8 +9,17 @@
 #import "TPTentHTTPClient.h"
 #import "AFJSONRequestOperation.h"
 
+NSString * const TPTentClientPostTypeStatus = @"https://tent.io/types/post/status/v0.1.0";
+NSString * const TPTentClientPostTypeEssay = @"https://tent.io/types/post/essay/v0.1.0";
+NSString * const TPTentClientPostTypePhoto = @"https://tent.io/types/post/photo/v0.1.0";
+NSString * const TPTentClientPostTypeAlbum = @"https://tent.io/types/post/album/v0.1.0";
+NSString * const TPTentClientPostTypeRepost = @"https://tent.io/types/post/repost/v0.1.0";
+NSString * const TPTentClientPostTypeProfileModification = @"https://tent.io/types/post/profile/v0.1.0";
+NSString * const TPTentClientPostTypeDeleteNotification = @"https://tent.io/types/post/delete/v0.1.0";
+
+
 NSString * const TPTentClientDidRegisterWithEntityNotification = @"com.thoughtfulpixel.tptentclient.notification.didregisterwithentity";
-NSString * const TPTentClientDidRegisterWithEntityURL = @"TPTentClientDidRegisterWithEntityURL";
+NSString * const TPTentClientDidRegisterWithEntityNotificationURLKey = @"TPTentClientDidRegisterWithEntityURL";
 
 @interface TPTentClient ()
 

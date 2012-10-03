@@ -48,11 +48,13 @@
         NSMutableArray *postArray = [NSMutableArray arrayWithCapacity:[representations count]];
         
         for (NSDictionary *representation in representations) {
-            StatusPost *statusPost = [[StatusPost alloc] init];
-            NSDictionary *content = representation[@"content"];
-            statusPost.status = content[@"text"];
-            statusPost.publishedAtDate = [NSDate dateWithTimeIntervalSince1970:[representation[@"published_at"] doubleValue]];
-            [postArray addObject:statusPost];
+            if ([representation[@"type"] isEqualToString:TPTentClientPostTypeStatus]) {
+                StatusPost *statusPost = [[StatusPost alloc] init];
+                NSDictionary *content = representation[@"content"];
+                statusPost.status = content[@"text"];
+                statusPost.publishedAtDate = [NSDate dateWithTimeIntervalSince1970:[representation[@"published_at"] doubleValue]];
+                [postArray addObject:statusPost];
+            }
         }
         
         weakSelf.statusArray = postArray;

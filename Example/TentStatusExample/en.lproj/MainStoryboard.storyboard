@@ -21,15 +21,25 @@
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
                                         <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" text="Label" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" preferredMaxLayoutWidth="280" translatesAutoresizingMaskIntoConstraints="NO" id="tGY-7H-OxI">
-                                            <fontDescription key="fontDescription" type="system" pointSize="13"/>
+                                            <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="14"/>
                                             <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
                                             <color key="highlightedColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                         </label>
                                         <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" text="Label" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="6l7-GA-UZM">
                                             <constraints>
                                                 <constraint firstAttribute="height" constant="20" type="user" id="mhg-E4-gd9"/>
+                                                <constraint firstAttribute="width" constant="115" id="v5Q-h9-hmI"/>
                                             </constraints>
-                                            <fontDescription key="fontDescription" type="system" pointSize="13"/>
+                                            <fontDescription key="fontDescription" name="HelveticaNeue-LightItalic" family="Helvetica Neue" pointSize="13"/>
+                                            <color key="textColor" red="0.20000000298023224" green="0.20000000298023224" blue="0.20000000298023224" alpha="1" colorSpace="calibratedRGB"/>
+                                            <color key="highlightedColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                        </label>
+                                        <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" text="Label" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="YNs-yK-uKV">
+                                            <constraints>
+                                                <constraint firstAttribute="height" constant="20" type="user" id="0Lk-fJ-P6W"/>
+                                                <constraint firstAttribute="width" constant="165" id="GAy-eS-hE9"/>
+                                            </constraints>
+                                            <fontDescription key="fontDescription" name="HelveticaNeue-Medium" family="Helvetica Neue" pointSize="14"/>
                                             <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
                                             <color key="highlightedColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                         </label>
@@ -38,14 +48,16 @@
                                 </view>
                                 <constraints>
                                     <constraint firstAttribute="trailing" secondItem="6l7-GA-UZM" secondAttribute="trailing" constant="20" type="default" id="4bw-df-twm"/>
-                                    <constraint firstItem="6l7-GA-UZM" firstAttribute="leading" secondItem="fLv-ew-ZnT" secondAttribute="leading" constant="20" type="default" id="McS-TM-c6Z"/>
+                                    <constraint firstItem="YNs-yK-uKV" firstAttribute="leading" secondItem="fLv-ew-ZnT" secondAttribute="leading" constant="20" type="default" id="5gd-bC-rbF"/>
+                                    <constraint firstAttribute="bottom" secondItem="tGY-7H-OxI" secondAttribute="bottom" constant="21" type="user" id="HbC-Jx-KlK"/>
                                     <constraint firstAttribute="trailing" secondItem="tGY-7H-OxI" secondAttribute="trailing" constant="20" type="default" id="OKN-20-pFO"/>
                                     <constraint firstItem="6l7-GA-UZM" firstAttribute="top" secondItem="fLv-ew-ZnT" secondAttribute="top" constant="16" type="user" id="XTv-fk-gJy"/>
-                                    <constraint firstAttribute="bottom" secondItem="tGY-7H-OxI" secondAttribute="bottom" constant="23" type="user" id="jgx-ms-vAL"/>
                                     <constraint firstItem="tGY-7H-OxI" firstAttribute="leading" secondItem="fLv-ew-ZnT" secondAttribute="leading" constant="20" type="default" id="p7F-nQ-Y87"/>
+                                    <constraint firstItem="tGY-7H-OxI" firstAttribute="top" secondItem="YNs-yK-uKV" secondAttribute="bottom" constant="8" symbolic="YES" type="default" id="tmT-30-s8X"/>
                                     <constraint firstItem="tGY-7H-OxI" firstAttribute="top" secondItem="6l7-GA-UZM" secondAttribute="bottom" constant="8" symbolic="YES" type="user" id="uR1-iW-ETq"/>
                                 </constraints>
                                 <connections>
+                                    <outlet property="entityNameLabel" destination="YNs-yK-uKV" id="Y28-D9-Jsu"/>
                                     <outlet property="publishedAtLabel" destination="6l7-GA-UZM" id="MbC-Ci-ozZ"/>
                                     <outlet property="statusLabel" destination="tGY-7H-OxI" id="QW7-ue-EAd"/>
                                 </connections>
@@ -88,6 +100,7 @@
         <class className="StatusPostCell" superclassName="UITableViewCell">
             <source key="sourceIdentifier" type="project" relativePath="./Classes/StatusPostCell.h"/>
             <relationships>
+                <relationship kind="outlet" name="entityNameLabel" candidateClass="UILabel"/>
                 <relationship kind="outlet" name="publishedAtLabel" candidateClass="UILabel"/>
                 <relationship kind="outlet" name="statusLabel" candidateClass="UILabel"/>
             </relationships>

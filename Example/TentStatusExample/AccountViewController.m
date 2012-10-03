@@ -8,14 +8,27 @@
 
 #import "AccountViewController.h"
 #import "TentStatusClient.h"
+#import "NSURL+TPEquivalence.h"
 
 @interface AccountViewController () <UITextFieldDelegate>
 
 @property (nonatomic, strong) IBOutlet UITextField *entityURIField;
+@property (nonatomic, strong) NSURL *entityURL;
+@property (nonatomic, strong) NSURL *tentServerURL;
 
 @end
 
 @implementation AccountViewController
+
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(didAuthorizeWithEntity:)
+                                                 name:TPTentClientDidRegisterWithEntityNotification
+                                               object:nil];
+}
 
 - (void)viewWillAppear:(BOOL)animated
 {
@@ -31,18 +44,31 @@
 - (BOOL)textFieldShouldReturn:(UITextField *)textField
 {
     NSURL *entityURL = [NSURL URLWithString:textField.text];
-    
-    if (![[TentStatusClient sharedClient] isAuthorizedWithEntityURL:entityURL]) {
-        [[TentStatusClient sharedClient] authorizeWithEntityURL:entityURL];
-    } else {
-        [self showTimeline];
+    if (!entityURL) {
+        return NO;
     }
     
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(didAuthorizeWithEntity:)
-                                                 name:TPTentClientDidRegisterWithEntityNotification
-                                               object:nil];
     [textField resignFirstResponder];
+    
+    if ([self.entityURL isEquivalent:entityURL] &&
+        [[TentStatusClient sharedClient] isAuthorizedWithTentServer:self.tentServerURL]) {
+        [self showTimeline];
+        return YES;
+    }
+    
+    self.entityURL = entityURL;
+    
+    __weak AccountViewController *weakSelf = self;
+    [[TentStatusClient sharedClient] discoverTentServerForEntity:self.entityURL success:^(NSURL *tentServerURL) {
+        if ([weakSelf.tentServerURL isEquivalent:tentServerURL] &&
+            [[TentStatusClient sharedClient] isAuthorizedWithTentServer:weakSelf.tentServerURL]) {
+            [weakSelf showTimeline];
+        } else {
+            weakSelf.tentServerURL = tentServerURL;
+            [[TentStatusClient sharedClient] authorizeWithTentServer:weakSelf.tentServerURL];
+        }
+    } failure:nil];
+
     return YES;
 }
 

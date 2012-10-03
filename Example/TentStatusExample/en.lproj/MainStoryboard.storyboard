@@ -74,7 +74,7 @@
             </objects>
             <point key="canvasLocation" x="986" y="56"/>
         </scene>
-        <!--Account View Controller - Tent Server-->
+        <!--Account View Controller - User-->
         <scene sceneID="Lc4-Es-9Ke">
             <objects>
                 <tableViewController id="WdH-tn-8Ga" customClass="AccountViewController" sceneMemberID="viewController">
@@ -119,9 +119,7 @@
                             <outlet property="delegate" destination="WdH-tn-8Ga" id="8U8-BA-wWh"/>
                         </connections>
                     </tableView>
-                    <navigationItem key="navigationItem" title="Tent Server" id="fol-ee-SVh">
-                        <barButtonItem key="backBarButtonItem" title="Account" id="H54-Z0-2OT"/>
-                    </navigationItem>
+                    <navigationItem key="navigationItem" title="User" id="fol-ee-SVh"/>
                     <connections>
                         <outlet property="entityURIField" destination="sJ0-yg-MbO" id="EDz-pb-Udc"/>
                         <segue destination="jN9-S8-eBF" kind="push" identifier="ShowTimeline" id="ame-zZ-DTE"/>

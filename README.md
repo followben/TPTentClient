@@ -1,5 +1,5 @@
 # TPTentClient
-**An elegant tent.io library for Cocoa Touch**
+**Elegant tent.io handling for Cocoa Touch**
 
 > This project is still under early and active development.
 > General feedback, bug reports and feature requests appreciated.
@@ -8,7 +8,7 @@ TPTentClient allows iOS applications to communicate with [tent.io](https://tent.
 
 ## Getting Started
 
-An example application is included in the repository, demonstrating server discovery, authorization and retrieval of status posts. 
+An example application is included in the repository, demonstrating server discovery, authorization, retrieval and posting of statuses. 
 
 Don't forget to pull down AFNetworking and SSToolkit with `git submodule update --init` to run the example.
 

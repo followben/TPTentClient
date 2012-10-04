@@ -38,7 +38,8 @@
         _sharedClient.appWebsiteURL = [NSURL URLWithString:@"http://tentstatusclient.example.com"];
         _sharedClient.customURLScheme = @"tentstatus";
         _sharedClient.scopes = @{@"read_profile": NSLocalizedString(@"TentStatusClient would like to access your profile", nil),
-                                 @"read_posts": NSLocalizedString(@"TentStatusClient would like to access your posts", nil)};
+                                 @"read_posts": NSLocalizedString(@"TentStatusClient would like to access your posts", nil),
+                                 @"write_posts": NSLocalizedString(@"TentStatusClient would like to post on your behalf", nil)};
     });
     
     return _sharedClient;

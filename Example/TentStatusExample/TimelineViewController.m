@@ -27,8 +27,9 @@
 #import "TentStatusClient.h"
 #import "StatusPost.h"
 #import "StatusPostCell.h"
+#import "NewStatusPostViewController.h"
 
-@interface TimelineViewController () <TPTentClientDelegate>
+@interface TimelineViewController () <TPTentClientDelegate, NewStatusPostViewControllerDelegate>
 
 @property (nonatomic, strong) NSArray *statusArray;
 
@@ -36,15 +37,27 @@
 
 @implementation TimelineViewController
 
+#pragma mark - Lifecycle
+
 - (void)viewDidLoad
 {
     [super viewDidLoad];
     
+    // Shouldn't need to do this, but hooking up UIRefreshControl in IB doesn't work. Bug?
+    [self.refreshControl addTarget:self action:@selector(refreshData:) forControlEvents:UIControlEventValueChanged];
+    
+    [self refreshData:nil];
+}
+
+#pragma mark - Actions
+
+- (IBAction)refreshData:(UIRefreshControl *)sender
+{
     __weak TimelineViewController *weakSelf = self;
     
-    [[TentStatusClient sharedClient] postRepresentationsWithSuccess:^(NSArray *representations) {
-        NSMutableArray *postArray = [NSMutableArray arrayWithCapacity:[representations count]];
+    [[TentStatusClient sharedClient] getPostRepresentationsWithSuccess:^(NSArray *representations) {
         
+        NSMutableArray *postArray = [NSMutableArray arrayWithCapacity:[representations count]];
         for (NSDictionary *representation in representations) {
             if ([representation[@"type"] isEqualToString:TPTentClientPostTypeStatus]) {
                 StatusPost *statusPost = [[StatusPost alloc] init];
@@ -55,12 +68,27 @@
                 [postArray addObject:statusPost];
             }
         }
-        
         weakSelf.statusArray = postArray;
+        
         [weakSelf.tableView reloadData];
+        if (sender) {
+            [sender endRefreshing];
+        }
         
     } failure:nil];
 }
+
+#pragma mark - UIViewController
+
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
+{
+    if ([segue.identifier isEqualToString:@"ShowNewStatusPost"]) {
+        NewStatusPostViewController *vc = (NewStatusPostViewController *)[segue destinationViewController];
+        vc.delegate = self;
+    }
+}
+
+#pragma mark - UITableViewDataSource conformance
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
 {
@@ -90,6 +118,15 @@
                                                                 dateStyle:NSDateFormatterShortStyle
                                                                 timeStyle:NSDateFormatterShortStyle];
     return cell;
+}
+
+#pragma mark - NewStatusPostViewControllerDelegate conformance
+
+- (void)newStatusPostViewController:(NewStatusPostViewController *)controller didPostStatus:(BOOL)didPost
+{
+    if (didPost) {
+        [self refreshData:nil];
+    }
 }
 
 @end

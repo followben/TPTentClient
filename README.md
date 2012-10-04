@@ -1,10 +1,10 @@
 # TPTentClient
-**An idiomatic Tent Library for Cocoa Touch**
+**Simple tent.io communication for Cocoa Touch**
 
 > This project is still under early and active development.
 > General feedback, bug reports and feature requests appreciated.
 
-TPTentClient is a lightweight wrapper around [AFNetworking](https://github.com/afnetworking/afnetworking) that allows iOS applications to communicate with [tent.io](https://tent.io) servers using the [Tent protocol](https://tent.io/docs).
+TPTentClient allows iOS applications to communicate with [tent.io](https://tent.io) servers using the [Tent protocol](https://tent.io/docs).
 
 ## Getting Started
 
@@ -27,7 +27,7 @@ TPTentClient currently supports a small subset of what's possible with Tent. The
 - Enhanced delegate methods and notifications
 - Support for Mac OS X and Cocoa
 
-If you need any of these things or more, please [open an issue](https://github.com/followben/TPTentClient/issues) or [fork the repo](https://github.com/followben/TPTentClient/fork_select) and submit a pull request.
+If you'd like to see a different feature or have found a bug, please [open an issue](https://github.com/followben/TPTentClient/issues). Alternatively, please [fork the repo](https://github.com/followben/TPTentClient/fork_select) and submit a pull request.
 
 ## Credits
 

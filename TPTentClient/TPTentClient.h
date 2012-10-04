@@ -44,8 +44,12 @@
                             success:(void (^)(NSURL *tentServerURL))success
                             failure:(void (^)(NSError *error))failure;
 
-- (void)postRepresentationsWithSuccess:(void (^)(NSArray *statusRepresentations))success
-                               failure:(void (^)(NSError *error))failure;
+- (void)getPostRepresentationsWithSuccess:(void (^)(NSArray *statusRepresentations))success
+                                  failure:(void (^)(NSError *error))failure;
+
+- (void)postStatusWithText:(NSString *)text permissions:(NSDictionary *)permissions
+                   success:(void (^)(void))success
+                   failure:(void (^)(NSError *error))failure;
 
 @end
 

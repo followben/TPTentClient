@@ -1,5 +1,5 @@
 # TPTentClient
-**Simple tent.io communication for Cocoa Touch**
+**An elegant tent.io library for Cocoa Touch**
 
 > This project is still under early and active development.
 > General feedback, bug reports and feature requests appreciated.

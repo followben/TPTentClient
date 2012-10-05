@@ -92,6 +92,9 @@ static NSString *const kTPTentContentType = @"application/vnd.tent.v0+json";
 @property (nonatomic, strong) NSString *tentMacKey;
 @property (nonatomic, strong) NSString *tentAccessToken;
 
+@property (nonatomic, copy) void (^registrationSuccessBlock) ();
+@property (nonatomic, copy) void (^registrationFailureBlock) (NSError *);
+
 @end
 
 #pragma mark
@@ -138,8 +141,16 @@ static NSString *const kTPTentContentType = @"application/vnd.tent.v0+json";
     return self.tentAccessToken.length > 0;
 }
 
-- (void)registerWithBaseURL
+- (void)registerForBaseURL
 {
+    [self registerForBaseURLWithSuccess:nil failure:nil];
+}
+
+- (void)registerForBaseURLWithSuccess:(void (^)())success failure:(void (^)(NSError *))failure
+{
+    self.registrationSuccessBlock = success;
+    self.registrationFailureBlock = failure;
+    
     if ([self isRegisteredWithBaseURL]) {
         NSLog(@"Token found - skipping App registration");
         return;
@@ -206,19 +217,27 @@ static NSString *const kTPTentContentType = @"application/vnd.tent.v0+json";
                                                       path:[NSString stringWithFormat:@"apps/%@/authorizations", self.tentClientId]
                                                 parameters:@{@"code": queryDictionary[@"code"], @"token_type": @"mac"}];
     
+    __weak TPTentHTTPClient *weakSelf = self;
+    
     AFJSONRequestOperation *operation = [AFJSONRequestOperation JSONRequestOperationWithRequest:request success:^(NSURLRequest *request, NSHTTPURLResponse *response, id JSON) {
         if (JSON[@"access_token"]) {
             
-            self.tentAccessToken = JSON[@"access_token"];
-            self.tentMacKey = JSON[@"mac_key"];
+            weakSelf.tentAccessToken = JSON[@"access_token"];
+            weakSelf.tentMacKey = JSON[@"mac_key"];
             
-            if ([self.delegate respondsToSelector:@selector(httpClientDidRegisterWithBaseURL:)]) {
-                [self.delegate httpClientDidRegisterWithBaseURL:self];
+            if ([weakSelf.delegate respondsToSelector:@selector(httpClientDidRegisterWithBaseURL:)]) {
+                [weakSelf.delegate httpClientDidRegisterWithBaseURL:self];
+            }
+            
+            if (weakSelf.registrationSuccessBlock) {
+                weakSelf.registrationSuccessBlock();
             }
             
         }
     } failure:^(NSURLRequest *request, NSHTTPURLResponse *response, NSError *error, id JSON) {
-        NSLog(@"Something went very wrong");
+        if (weakSelf.registrationFailureBlock) {
+            weakSelf.registrationFailureBlock(error);
+        }
     }];
     
     [self enqueueHTTPRequestOperation:operation];

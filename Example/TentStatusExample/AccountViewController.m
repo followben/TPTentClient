@@ -69,7 +69,7 @@
     [textField resignFirstResponder];
     
     if ([self.entityURL isEquivalent:entityURL] &&
-        [[TentStatusClient sharedClient] isAuthorizedWithTentServer:self.tentServerURL]) {
+        [[TentStatusClient sharedClient] isAuthorizedForTentServer:self.tentServerURL]) {
         [self showTimeline];
         return YES;
     }
@@ -77,13 +77,13 @@
     self.entityURL = entityURL;
     
     __weak AccountViewController *weakSelf = self;
-    [[TentStatusClient sharedClient] discoverTentServerForEntity:self.entityURL success:^(NSURL *tentServerURL) {
+    [[TentStatusClient sharedClient] discoverTentServerForEntityURL:self.entityURL success:^(NSURL *tentServerURL) {
         if ([weakSelf.tentServerURL isEquivalent:tentServerURL] &&
-            [[TentStatusClient sharedClient] isAuthorizedWithTentServer:weakSelf.tentServerURL]) {
+            [[TentStatusClient sharedClient] isAuthorizedForTentServer:weakSelf.tentServerURL]) {
             [weakSelf showTimeline];
         } else {
             weakSelf.tentServerURL = tentServerURL;
-            [[TentStatusClient sharedClient] authorizeWithTentServer:weakSelf.tentServerURL];
+            [[TentStatusClient sharedClient] authorizeForTentServerURL:weakSelf.tentServerURL];
         }
     } failure:nil];
 

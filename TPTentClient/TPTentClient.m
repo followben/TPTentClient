@@ -29,6 +29,7 @@
 
 #pragma mark - Constants
 
+#pragma mark Post Types
 NSString * const TPTentClientPostTypeStatus = @"https://tent.io/types/post/status/v0.1.0";
 NSString * const TPTentClientPostTypeEssay = @"https://tent.io/types/post/essay/v0.1.0";
 NSString * const TPTentClientPostTypePhoto = @"https://tent.io/types/post/photo/v0.1.0";
@@ -37,12 +38,20 @@ NSString * const TPTentClientPostTypeRepost = @"https://tent.io/types/post/repos
 NSString * const TPTentClientPostTypeProfileModification = @"https://tent.io/types/post/profile/v0.1.0";
 NSString * const TPTentClientPostTypeDeleteNotification = @"https://tent.io/types/post/delete/v0.1.0";
 
+#pragma mark Notifications
+NSString * const TPTentServerDiscoveryCheckingHeadResponseForProfileLinkNotification = @"com.thoughtfulpixel.tptentclient.note.discovery.headprofile";
+NSString * const TPTentServerDiscoveryFellBackToGetResponseForProfileLinkNotification = @"com.thoughtfulpixel.tptentclient.note.discovery.getprofile";
+NSString * const TPTentServerDiscoveryFetchingCanonicalURLsFromProfileNotification = @"com.thoughtfulpixel.tptentclient.note.discovery.locateservers";
+NSString * const TPTentServerDiscoveryCompleteNotification = @"com.thoughtfulpixel.tptentclient.note.discovery.complete";
+NSString * const TPTentServerDiscoveryCompleteNotificationCanonicalServerURLKey = @"TPTentClientCanonicalServerURLKey";
+NSString * const TPTentServerDiscoveryCompleteNotificationCanonicalEntityURLKey = @"TPTentClientCanonicalEntityURLKey";
+NSString * const TPTentClientWillAuthorizeWithTentServerNotification = @"com.thoughtfulpixel.tptentclient.note.authorization.willauthorise";
+NSString * const TPTentClientDidAuthorizeWithTentServerNotification = @"com.thoughtfulpixel.tptentclient.note.authorization.didauthorise";
+NSString * const TPTentClientAuthorizingWithTentServerURLKey = @"TPTentClientServerURLKey";
+
+#pragma mark Private
 static NSString * const TPTentClientProfileInfoTypeCore = @"https://tent.io/types/info/core/v0.1.0";
 static NSString * const TPTentClientProfileInfoTypeBasic = @"https://tent.io/types/info/basic/v0.1.0";
-
-NSString * const TPTentClientDidRegisterWithEntityNotification = @"com.thoughtfulpixel.tptentclient.notification.didregisterwithentity";
-NSString * const TPTentClientDidRegisterWithEntityNotificationURLKey = @"TPTentClientDidRegisterWithEntityURL";
-
 
 
 #pragma mark 
@@ -96,6 +105,10 @@ NSString * const TPTentClientDidRegisterWithEntityNotificationURLKey = @"TPTentC
         self.httpClient = [[TPTentHTTPClient alloc] initWithBaseURL:url];
         self.httpClient.delegate = self;
     }
+    
+    [[NSNotificationCenter defaultCenter] postNotificationName:TPTentClientWillAuthorizeWithTentServerNotification
+                                                        object:nil
+                                                      userInfo:@{TPTentClientAuthorizingWithTentServerURLKey: url}];
     
     [self.httpClient registerForBaseURLWithSuccess:success failure:failure];
 }
@@ -174,9 +187,9 @@ NSString * const TPTentClientDidRegisterWithEntityNotificationURLKey = @"TPTentC
 
 - (void)httpClientDidRegisterWithBaseURL:(TPTentHTTPClient *)httpClient
 {
-    [[NSNotificationCenter defaultCenter] postNotificationName:TPTentClientDidRegisterWithEntityNotification
+    [[NSNotificationCenter defaultCenter] postNotificationName:TPTentClientDidAuthorizeWithTentServerNotification
                                                         object:nil
-                                                      userInfo:@{TPTentClientDidRegisterWithEntityNotification: httpClient.baseURL}];
+                                                      userInfo:@{TPTentClientAuthorizingWithTentServerURLKey: httpClient.baseURL}];
     
     if ([self.delegate respondsToSelector:@selector(tentClient:didAuthorizeWithTentServerURL:)]) {
         [self.delegate tentClient:self didAuthorizeWithTentServerURL:httpClient.baseURL];
@@ -191,6 +204,10 @@ NSString * const TPTentClientDidRegisterWithEntityNotificationURLKey = @"TPTentC
                                       success:(void (^)(NSURL *canonicalServerURL, NSURL *canonicalEntityURL))success
                                       failure:(void (^)(NSError *error))failure
 {
+    [[NSNotificationCenter defaultCenter] postNotificationName:TPTentServerDiscoveryCheckingHeadResponseForProfileLinkNotification
+                                                        object:nil
+                                                      userInfo:nil];
+    
     NSMutableURLRequest *headRequest = [discoveryHTTPClient requestWithMethod:@"HEAD" path:@"/" parameters:nil];
     
     AFHTTPRequestOperation *headOperation = [[AFHTTPRequestOperation alloc] initWithRequest:headRequest];
@@ -253,6 +270,10 @@ NSString * const TPTentClientDidRegisterWithEntityNotificationURLKey = @"TPTentC
                                      success:(void (^)(NSURL *canonicalServerURL, NSURL *canonicalEntityURL))success
                                      failure:(void (^)(NSError *error))failure
 {
+    [[NSNotificationCenter defaultCenter] postNotificationName:TPTentServerDiscoveryFellBackToGetResponseForProfileLinkNotification
+                                                        object:nil
+                                                      userInfo:nil];
+    
     [discoveryHTTPClient getPath:@"/" parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
         NSURL *profileURL = [self profileURLFromCompletedGetOperation:operation
                                                        responseString:[[NSString alloc] initWithData:responseObject encoding:NSUTF8StringEncoding]];
@@ -323,6 +344,10 @@ NSString * const TPTentClientDidRegisterWithEntityNotificationURLKey = @"TPTentC
                                   success:(void (^)(NSURL *canonicalServerURL, NSURL *canonicalEntityURL))success
                                   failure:(void (^)(NSError *error))failure
 {
+    [[NSNotificationCenter defaultCenter] postNotificationName:TPTentServerDiscoveryFetchingCanonicalURLsFromProfileNotification
+                                                        object:nil
+                                                      userInfo:nil];
+    
     AFHTTPClient *aHTTPClient = [[TPTentHTTPClient alloc] initWithBaseURL:url];
     
     NSMutableURLRequest *getRequest = [aHTTPClient requestWithMethod:@"GET" path:[NSString string] parameters:nil];
@@ -347,6 +372,10 @@ NSString * const TPTentClientDidRegisterWithEntityNotificationURLKey = @"TPTentC
             return;
         }
         
+        [[NSNotificationCenter defaultCenter] postNotificationName:TPTentServerDiscoveryCompleteNotification
+                                                            object:nil
+                                                          userInfo:@{TPTentServerDiscoveryCompleteNotificationCanonicalServerURLKey: tentServerURL,
+                                                                     TPTentServerDiscoveryCompleteNotificationCanonicalEntityURLKey: tentEntityURL}];
         if (success) {
             success(tentServerURL, tentEntityURL);
         }

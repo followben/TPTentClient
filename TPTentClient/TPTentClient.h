@@ -72,10 +72,19 @@ extern NSString * const TPTentClientPostTypeProfileModification;
 extern NSString * const TPTentClientPostTypeDeleteNotification;
 
 // Notifications and UserInfo dict keys
-extern NSString * const TPTentClientDidRegisterWithEntityNotification;
-extern NSString * const TPTentClientDidRegisterWithEntityNotificationURLKey;
+extern NSString * const TPTentServerDiscoveryCheckingHeadResponseForProfileLinkNotification;
+extern NSString * const TPTentServerDiscoveryFellBackToGetResponseForProfileLinkNotification;
+extern NSString * const TPTentServerDiscoveryFetchingCanonicalURLsFromProfileNotification;
+extern NSString * const TPTentServerDiscoveryCompleteNotification;
+extern NSString * const TPTentServerDiscoveryCompleteNotificationCanonicalServerURLKey;
+extern NSString * const TPTentServerDiscoveryCompleteNotificationCanonicalEntityURLKey;
+extern NSString * const TPTentClientWillAuthorizeWithTentServerNotification;
+extern NSString * const TPTentClientDidAuthorizeWithTentServerNotification;
+extern NSString * const TPTentClientAuthorizingWithTentServerURLKey;
 
 @protocol TPTentClientDelegate <NSObject>
 @optional
-- (void)tentClient:(TPTentClient *)tentClient didAuthorizeWithTentServerURL:(NSURL *)url;
+// TODO: notes and delegate calls should map one-to-one
+- (void)tentClient:(TPTentClient *)tentClient didAuthorizeWithTentServerURL:(NSURL *)canonicalServerURL;
 @end
+

@@ -59,8 +59,6 @@
 
 - (BOOL)textFieldShouldReturn:(UITextField *)textField
 {
-    // TODO: Simplify discovery/ auth process
-    
     NSURL *entityURL = [NSURL URLWithString:textField.text];
     if (!entityURL) {
         return NO;
@@ -76,14 +74,14 @@
     
     self.entityURL = entityURL;
     
-    __weak AccountViewController *weakSelf = self;
-    [[TentStatusClient sharedClient] discoverTentServerForEntityURL:self.entityURL success:^(NSURL *tentServerURL) {
-        if ([weakSelf.tentServerURL isEquivalent:tentServerURL] &&
-            [[TentStatusClient sharedClient] isAuthorizedForTentServer:weakSelf.tentServerURL]) {
-            [weakSelf showTimeline];
+    [[TentStatusClient sharedClient] discoverTentServerForEntityURL:self.entityURL success:^(NSURL *canonicalServerURL, NSURL *canonicalEntityURL) {
+        self.entityURL = canonicalEntityURL;
+        if ([self.tentServerURL isEquivalent:canonicalServerURL] &&
+            [[TentStatusClient sharedClient] isAuthorizedForTentServer:self.tentServerURL]) {
+            [self showTimeline];
         } else {
-            weakSelf.tentServerURL = tentServerURL;
-            [[TentStatusClient sharedClient] authorizeForTentServerURL:weakSelf.tentServerURL];
+            self.tentServerURL = canonicalServerURL;
+            [[TentStatusClient sharedClient] authorizeForTentServerURL:self.tentServerURL];
         }
     } failure:nil];
 

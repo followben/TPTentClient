@@ -35,22 +35,31 @@
 @property (nonatomic, strong) NSURL *appWebsiteURL;
 @property (nonatomic, strong) NSDictionary *scopes;
 
-- (BOOL)isAuthorizedWithTentServer:(NSURL *)url;
-- (void)authorizeWithTentServer:(NSURL *)url;
+// Discovery
+- (void)discoverTentServerForEntityURL:(NSURL *)url
+                               success:(void (^)(NSURL *tentServerURL))success
+                               failure:(void (^)(NSError *error))failure;
+
+// OAuth
+- (BOOL)isAuthorizedForTentServer:(NSURL *)url;
+- (void)authorizeForTentServerURL:(NSURL *)url;
+- (void)authorizeForTentServerURL:(NSURL *)url
+                          success:(void (^)(NSURL *tentServerURL))success
+                          failure:(void (^)(NSError *error))failure;
 
 - (BOOL)handleOpenURL:(NSURL *)url;
 
-- (void)discoverTentServerForEntity:(NSURL *)url
-                            success:(void (^)(NSURL *tentServerURL))success
-                            failure:(void (^)(NSError *error))failure;
-
+// Retrieving Representations
 - (void)getPostRepresentationsWithSuccess:(void (^)(NSArray *statusRepresentations))success
                                   failure:(void (^)(NSError *error))failure;
 
+// Creating Resources
 - (void)postStatusWithText:(NSString *)text permissions:(NSDictionary *)permissions
                    success:(void (^)(void))success
                    failure:(void (^)(NSError *error))failure;
-
+- (void)postPostWithType:(NSString *)postType permissions:(NSDictionary *)permissions content:(NSDictionary *)content
+                 success:(void (^)(void))success
+                 failure:(void (^)(NSError *error))failure;
 @end
 
 // Tent post types

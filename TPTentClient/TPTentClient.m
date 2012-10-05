@@ -37,9 +37,12 @@ NSString * const TPTentClientPostTypeRepost = @"https://tent.io/types/post/repos
 NSString * const TPTentClientPostTypeProfileModification = @"https://tent.io/types/post/profile/v0.1.0";
 NSString * const TPTentClientPostTypeDeleteNotification = @"https://tent.io/types/post/delete/v0.1.0";
 
+static NSString * const TPTentClientProfileInfoTypeCore = @"https://tent.io/types/info/core/v0.1.0";
+static NSString * const TPTentClientProfileInfoTypeBasic = @"https://tent.io/types/info/basic/v0.1.0";
 
 NSString * const TPTentClientDidRegisterWithEntityNotification = @"com.thoughtfulpixel.tptentclient.notification.didregisterwithentity";
 NSString * const TPTentClientDidRegisterWithEntityNotificationURLKey = @"TPTentClientDidRegisterWithEntityURL";
+
 
 
 #pragma mark 
@@ -55,7 +58,19 @@ NSString * const TPTentClientDidRegisterWithEntityNotificationURLKey = @"TPTentC
 
 #pragma mark - Public methods
 
-- (BOOL)isAuthorizedWithTentServer:(NSURL *)url
+#pragma mark Discovery
+
+- (void)discoverTentServerForEntityURL:(NSURL *)url
+                               success:(void (^)(NSURL *tentServerURL))success
+                               failure:(void (^)(NSError *error))failure
+{
+    AFHTTPClient *discoveryHTTPClient = [[AFHTTPClient alloc] initWithBaseURL:url];
+    [self headTentServerWithDiscoveryHTTPClient:discoveryHTTPClient success:success failure:failure];
+}
+
+#pragma mark OAuth
+
+- (BOOL)isAuthorizedForTentServer:(NSURL *)url
 {
     if (self.httpClient && [self.httpClient.baseURL isEquivalent:url] && [self.httpClient isRegisteredWithBaseURL]) {
         return YES;
@@ -64,7 +79,7 @@ NSString * const TPTentClientDidRegisterWithEntityNotificationURLKey = @"TPTentC
     return NO;
 }
 
-- (void)authorizeWithTentServer:(NSURL *)url
+- (void)authorizeForTentServerURL:(NSURL *)url
 {
     if (self.httpClient.isRegisteredWithBaseURL && [self.httpClient.baseURL isEqual:url]) {
         return;
@@ -83,74 +98,27 @@ NSString * const TPTentClientDidRegisterWithEntityNotificationURLKey = @"TPTentC
     return [self.httpClient handleOpenURL:url];
 }
 
-- (void)httpClientDidRegisterWithBaseURL:(TPTentHTTPClient *)httpClient
-{
-    [[NSNotificationCenter defaultCenter] postNotificationName:TPTentClientDidRegisterWithEntityNotification
-                                                        object:nil
-                                                      userInfo:@{TPTentClientDidRegisterWithEntityNotification: httpClient.baseURL}];
-    
-    if ([self.delegate respondsToSelector:@selector(tentClient:didAuthorizeWithEntityURL:)]) {
-        [self.delegate tentClient:self didAuthorizeWithEntityURL:httpClient.baseURL];
-    }
-}
+#pragma mark Retrieving Represenations
 
-- (void)discoverTentServerForEntity:(NSURL *)url
-                            success:(void (^)(NSURL *tentServerURL))success
-                            failure:(void (^)(NSError *error))failure
+- (void)getPostRepresentationsWithSuccess:(void (^)(NSArray *statusRepresentations))success
+                                  failure:(void (^)(NSError *error))failure
 {
-    AFHTTPClient *discoveryHTTPClient = [[AFHTTPClient alloc] initWithBaseURL:url];
-    
-    NSMutableURLRequest *request = [discoveryHTTPClient requestWithMethod:@"HEAD" path:@"/" parameters:nil];
+    NSMutableURLRequest *request = [self.httpClient requestWithMethod:@"GET" path:@"posts" parameters:nil];
     
     AFJSONRequestOperation *operation = [AFJSONRequestOperation JSONRequestOperationWithRequest:request success:^(NSURLRequest *request, NSHTTPURLResponse *response, id JSON) {
-        
-        NSURL *tentServerURL = [self canonicalTentServerURLFromDiscoveryResponse:response];
-        if (tentServerURL && success) {
-            success(tentServerURL);
+        if (success) {
+            success((NSArray *)JSON);
         }
-        
     } failure:^(NSURLRequest *request, NSHTTPURLResponse *response, NSError *error, id JSON) {
         if (failure) {
             failure(error);
         }
     }];
     
-    [discoveryHTTPClient enqueueHTTPRequestOperation:operation];
+    [self.httpClient enqueueHTTPRequestOperation:operation];
 }
 
-- (NSURL *)canonicalTentServerURLFromDiscoveryResponse:(NSHTTPURLResponse *)response
-{
-    NSString *profileLink = [[response allHeaderFields] valueForKey:@"Link"];
-    
-    if (![profileLink hasPrefix:@"<"]) {
-        NSLog(@"Cannot parse profile link \n%@", profileLink);
-        return nil;
-    }
-    
-    // TODO: Lookup canonical url(s); just parse link for now
-    
-    profileLink = [profileLink substringFromIndex:1];
-    NSString *profileDeclarationSuffix = @">; rel=\"https://tent.io/rels/profile\"";
-    NSScanner *scanner = [NSScanner scannerWithString:profileLink];
-    NSString *profileURLString;
-    
-    if (![profileLink hasPrefix:@"http"]) {
-        
-        NSString *relativeURLString;
-        [scanner scanUpToString:profileDeclarationSuffix intoString:&relativeURLString];
-        if ([relativeURLString hasPrefix:@"/"]) relativeURLString = [relativeURLString substringFromIndex:1];
-        profileURLString = [NSString stringWithFormat:@"%@%@", [response.URL absoluteString], relativeURLString];
-        
-    } else {
-        [scanner scanUpToString:@"http" intoString:nil];
-        if (![scanner isAtEnd]) {
-            [scanner scanUpToString:profileDeclarationSuffix intoString:&profileURLString];
-        }
-    }
-    NSMutableString *serverURLString = [profileURLString mutableCopy];
-    [serverURLString deleteCharactersInRange:NSMakeRange(serverURLString.length - [@"/profile" length], [@"/profile" length])];
-    return [NSURL URLWithString:serverURLString];
-}
+#pragma mark Creating Resources
 
 - (void)postStatusWithText:(NSString *)text permissions:(NSDictionary *)permissions
                    success:(void (^)(void))success
@@ -195,22 +163,198 @@ NSString * const TPTentClientDidRegisterWithEntityNotificationURLKey = @"TPTentC
     [self.httpClient enqueueHTTPRequestOperation:operation];
 }
 
-- (void)getPostRepresentationsWithSuccess:(void (^)(NSArray *statusRepresentations))success
+#pragma mark - TPTentHTTPClientDelegate conformance
+
+- (void)httpClientDidRegisterWithBaseURL:(TPTentHTTPClient *)httpClient
+{
+    [[NSNotificationCenter defaultCenter] postNotificationName:TPTentClientDidRegisterWithEntityNotification
+                                                        object:nil
+                                                      userInfo:@{TPTentClientDidRegisterWithEntityNotification: httpClient.baseURL}];
+    
+    if ([self.delegate respondsToSelector:@selector(tentClient:didAuthorizeWithEntityURL:)]) {
+        [self.delegate tentClient:self didAuthorizeWithEntityURL:httpClient.baseURL];
+    }
+}
+
+#pragma mark - Private methods
+
+#pragma mark Discovery
+
+- (void)headTentServerWithDiscoveryHTTPClient:(AFHTTPClient *)discoveryHTTPClient
+                                      success:(void (^)(NSURL *tentServerURL))success
+                                      failure:(void (^)(NSError *error))failure
+{
+    NSMutableURLRequest *headRequest = [discoveryHTTPClient requestWithMethod:@"HEAD" path:@"/" parameters:nil];
+    
+    AFHTTPRequestOperation *headOperation = [[AFHTTPRequestOperation alloc] initWithRequest:headRequest];
+    
+    [headOperation setCompletionBlockWithSuccess:^(AFHTTPRequestOperation *operation, id responseObject) {
+        NSURL *profileURL = [self profileURLFromCompletedHeadOperation:operation];
+        if (!profileURL) {
+            [self getTentServerWithDiscoveryHTTPClient:discoveryHTTPClient success:success failure:failure];
+            return;
+        }
+        
+        [self getCanonicalAPIRootFromProfileURL:profileURL success:success failure:failure];
+    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+        if (failure) {
+            failure(error);
+        }
+    }];
+
+    [discoveryHTTPClient enqueueHTTPRequestOperation:headOperation];
+}
+
+- (NSURL *)profileURLFromCompletedHeadOperation:(AFHTTPRequestOperation *)operation
+{
+    NSString *linkHeader = [[operation.response allHeaderFields] valueForKey:@"Link"];
+    NSString *linkHeaderPrefix = @"<";
+    NSString *linkHeaderSuffix = @">; rel=\"https://tent.io/rels/profile\"";
+    
+    if (![linkHeader hasPrefix:linkHeaderPrefix] || ![linkHeader hasSuffix:linkHeaderSuffix]) {
+        return nil;
+    }
+    
+    linkHeader = [linkHeader substringFromIndex:1];
+
+    NSScanner *scanner = [NSScanner scannerWithString:linkHeader];
+    NSString *profileURLString;
+    
+    if (![linkHeader hasPrefix:@"http"]) {
+        
+        NSString *relativeURLString;
+        [scanner scanUpToString:linkHeaderSuffix intoString:&relativeURLString];
+        if ([relativeURLString hasPrefix:@"/"]) relativeURLString = [relativeURLString substringFromIndex:1];
+        profileURLString = [NSString stringWithFormat:@"%@%@", [operation.response.URL absoluteString], relativeURLString];
+        
+    } else {
+        [scanner scanUpToString:@"http" intoString:nil];
+        if (![scanner isAtEnd]) {
+            [scanner scanUpToString:linkHeaderSuffix intoString:&profileURLString];
+        }
+    }
+    
+    NSURL *profileURL;
+    if (profileURLString.length > 0) {
+        profileURL = [NSURL URLWithString:profileURLString];
+    }
+    
+    return profileURL;
+}
+
+- (void)getTentServerWithDiscoveryHTTPClient:(AFHTTPClient *)discoveryHTTPClient
+                                     success:(void (^)(NSURL *tentServerURL))success
+                                     failure:(void (^)(NSError *error))failure
+{
+    [discoveryHTTPClient getPath:@"/" parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        NSURL *profileURL = [self profileURLFromCompletedGetOperation:operation
+                                                       responseString:[[NSString alloc] initWithData:responseObject encoding:NSUTF8StringEncoding]];
+        
+        if (!profileURL) {
+            NSLog(@"Error: can't find tent profile using %@", [discoveryHTTPClient.baseURL absoluteString]);
+            if (failure) {
+                failure(nil);   // TODO: throw an error
+            }
+            return;
+        }
+        
+        [self getCanonicalAPIRootFromProfileURL:profileURL success:success failure:failure];
+        
+    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+        if (failure) {
+            failure(error);
+        }
+    }];
+}
+
+- (NSURL *)profileURLFromCompletedGetOperation:(AFHTTPRequestOperation *)operation responseString:(NSString *)responseString
+{
+    NSString *linkTagPrefix = @"<link";
+    NSString *linkRelationshipURIString = @"https://tent.io/rels/profile";
+    NSString *linkTagSuffix = @"/>";
+    
+    if ([responseString rangeOfString:linkRelationshipURIString].location == NSNotFound) {
+        return nil;
+    }
+    
+    NSScanner *scanner = [NSScanner scannerWithString:responseString];
+    NSString *linkTagString = [NSString string];
+    while ([linkTagString rangeOfString:linkRelationshipURIString].location == NSNotFound) {
+        [scanner scanUpToString:linkTagPrefix intoString:nil];
+        if (![scanner isAtEnd]) {
+            [scanner scanUpToString:linkTagSuffix intoString:&linkTagString];
+        }
+    }
+    
+    scanner = [NSScanner scannerWithString:linkTagString];
+    NSString *hrefString;
+    [scanner scanUpToString:@"href=" intoString:nil];
+    if (![scanner isAtEnd]) {
+        [scanner scanUpToString:@" " intoString:&hrefString];
+    }
+    
+    hrefString = [hrefString stringByReplacingOccurrencesOfString:@"\"" withString:@""];
+    hrefString = [hrefString stringByReplacingOccurrencesOfString:@"'" withString:@""];
+    
+    NSString *profileURLString = [hrefString stringByReplacingOccurrencesOfString:@"href=" withString:@""];
+    
+    if (![profileURLString hasPrefix:@"http"]) {
+        NSString *relativeURLString = profileURLString;
+        if ([relativeURLString hasPrefix:@"/"]) relativeURLString = [relativeURLString substringFromIndex:1];
+        profileURLString = [NSString stringWithFormat:@"%@%@", [operation.response.URL absoluteString], relativeURLString];
+    }
+    
+    NSURL *profileURL;
+    if (profileURLString.length > 0) {
+        profileURL = [NSURL URLWithString:profileURLString];
+    }
+    
+    return profileURL;
+}
+
+- (void)getCanonicalAPIRootFromProfileURL:(NSURL *)url
+                                  success:(void (^)(NSURL *tentServerURL))success
                                   failure:(void (^)(NSError *error))failure
 {
-    NSMutableURLRequest *request = [self.httpClient requestWithMethod:@"GET" path:@"posts" parameters:nil];
+    AFHTTPClient *canonicalAPIHTTPClient = [[TPTentHTTPClient alloc] initWithBaseURL:url];
     
-    AFJSONRequestOperation *operation = [AFJSONRequestOperation JSONRequestOperationWithRequest:request success:^(NSURLRequest *request, NSHTTPURLResponse *response, id JSON) {
-        if (success) {
-            success((NSArray *)JSON);
+    NSMutableURLRequest *getRequest = [canonicalAPIHTTPClient requestWithMethod:@"GET" path:[NSString string] parameters:nil];
+    
+    AFJSONRequestOperation *operation = [AFJSONRequestOperation JSONRequestOperationWithRequest:getRequest success:^(NSURLRequest *getRequest, NSHTTPURLResponse *getResponse, id JSON) {
+
+        NSURL *tentServerURL = [self tentServerURLFromCanonicalAPIGetResponse:JSON];
+        if (!tentServerURL) {
+            NSLog(@"Error: can't find a tent server in the profile located at %@", [canonicalAPIHTTPClient.baseURL absoluteString]);
+            if (failure) {
+                failure(nil);   // TODO: throw an error
+            }
+            return;
         }
+        
+        if (success) {
+            success(tentServerURL);
+        }
+        
     } failure:^(NSURLRequest *request, NSHTTPURLResponse *response, NSError *error, id JSON) {
         if (failure) {
             failure(error);
         }
     }];
     
-    [self.httpClient enqueueHTTPRequestOperation:operation];
+    [canonicalAPIHTTPClient enqueueHTTPRequestOperation:operation];
+}
+
+- (NSURL *)tentServerURLFromCanonicalAPIGetResponse:(id)JSON
+{
+    NSArray *serverURLs = JSON[TPTentClientProfileInfoTypeCore][@"servers"];
+    
+    // TODO: Support multiple servers
+    NSString *tentServerURLString;
+    if (serverURLs && [serverURLs count] > 0) {
+        tentServerURLString = serverURLs[0];
+    }
+
+    return [NSURL URLWithString:tentServerURLString];
 }
 
 @end

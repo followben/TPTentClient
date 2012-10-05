@@ -178,8 +178,8 @@ NSString * const TPTentClientDidRegisterWithEntityNotificationURLKey = @"TPTentC
                                                         object:nil
                                                       userInfo:@{TPTentClientDidRegisterWithEntityNotification: httpClient.baseURL}];
     
-    if ([self.delegate respondsToSelector:@selector(tentClient:didAuthorizeWithEntityURL:)]) {
-        [self.delegate tentClient:self didAuthorizeWithEntityURL:httpClient.baseURL];
+    if ([self.delegate respondsToSelector:@selector(tentClient:didAuthorizeWithTentServerURL:)]) {
+        [self.delegate tentClient:self didAuthorizeWithTentServerURL:httpClient.baseURL];
     }
 }
 

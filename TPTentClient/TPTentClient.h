@@ -77,5 +77,5 @@ extern NSString * const TPTentClientDidRegisterWithEntityNotificationURLKey;
 
 @protocol TPTentClientDelegate <NSObject>
 @optional
-- (void)tentClient:(TPTentClient *)tentClient didAuthorizeWithEntityURL:(NSURL *)url;
+- (void)tentClient:(TPTentClient *)tentClient didAuthorizeWithTentServerURL:(NSURL *)url;
 @end

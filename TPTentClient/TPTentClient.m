@@ -42,9 +42,10 @@ NSString * const TPTentClientPostTypeDeleteNotification = @"https://tent.io/type
 NSString * const TPTentServerDiscoveryCheckingHeadResponseForProfileLinkNotification = @"com.thoughtfulpixel.tptentclient.note.discovery.headprofile";
 NSString * const TPTentServerDiscoveryFellBackToGetResponseForProfileLinkNotification = @"com.thoughtfulpixel.tptentclient.note.discovery.getprofile";
 NSString * const TPTentServerDiscoveryFetchingCanonicalURLsFromProfileNotification = @"com.thoughtfulpixel.tptentclient.note.discovery.locateservers";
-NSString * const TPTentServerDiscoveryCompleteNotification = @"com.thoughtfulpixel.tptentclient.note.discovery.complete";
-NSString * const TPTentServerDiscoveryCompleteNotificationCanonicalServerURLKey = @"TPTentClientCanonicalServerURLKey";
-NSString * const TPTentServerDiscoveryCompleteNotificationCanonicalEntityURLKey = @"TPTentClientCanonicalEntityURLKey";
+NSString * const TPTentServerDiscoveryFailureNotification = @"com.thoughtfulpixel.tptentclient.note.discovery.failure";
+NSString * const TPTentServerDiscoverySuccessNotification = @"com.thoughtfulpixel.tptentclient.note.discovery.success";
+NSString * const TPTentServerDiscoverySuccessNotificationCanonicalServerURLKey = @"TPTentClientCanonicalServerURLKey";
+NSString * const TPTentServerDiscoverySuccessNotificationCanonicalEntityURLKey = @"TPTentClientCanonicalEntityURLKey";
 NSString * const TPTentClientWillAuthorizeWithTentServerNotification = @"com.thoughtfulpixel.tptentclient.note.authorization.willauthorise";
 NSString * const TPTentClientDidAuthorizeWithTentServerNotification = @"com.thoughtfulpixel.tptentclient.note.authorization.didauthorise";
 NSString * const TPTentClientAuthorizingWithTentServerURLKey = @"TPTentClientServerURLKey";
@@ -221,9 +222,7 @@ static NSString * const TPTentClientProfileInfoTypeBasic = @"https://tent.io/typ
         
         [self getCanonicalURLsFromProfileURL:profileURL success:success failure:failure];
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-        if (failure) {
-            failure(error);
-        }
+        [self handleDiscoveryError:error withBlock:failure];
     }];
 
     [discoveryHTTPClient enqueueHTTPRequestOperation:headOperation];
@@ -280,18 +279,14 @@ static NSString * const TPTentClientProfileInfoTypeBasic = @"https://tent.io/typ
         
         if (!profileURL) {
             NSLog(@"Error: can't find tent profile using %@", [discoveryHTTPClient.baseURL absoluteString]);
-            if (failure) {
-                failure(nil);   // TODO: throw an error
-            }
+            [self handleDiscoveryError:nil withBlock:failure];      // TODO: create NSError
             return;
         }
         
         [self getCanonicalURLsFromProfileURL:profileURL success:success failure:failure];
         
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-        if (failure) {
-            failure(error);
-        }
+        [self handleDiscoveryError:error withBlock:failure];
     }];
 }
 
@@ -353,37 +348,31 @@ static NSString * const TPTentClientProfileInfoTypeBasic = @"https://tent.io/typ
     NSMutableURLRequest *getRequest = [aHTTPClient requestWithMethod:@"GET" path:[NSString string] parameters:nil];
     
     AFJSONRequestOperation *operation = [AFJSONRequestOperation JSONRequestOperationWithRequest:getRequest success:^(NSURLRequest *getRequest, NSHTTPURLResponse *getResponse, id JSON) {
-
+        
         NSURL *tentServerURL = [self serverURLFromJSON:JSON];
         if (!tentServerURL) {
             NSLog(@"Error: can't find a tent server in the profile located at %@", [aHTTPClient.baseURL absoluteString]);
-            if (failure) {
-                failure(nil);   // TODO: throw an error
-            }
+            [self handleDiscoveryError:nil withBlock:failure];      // TODO: create NSError
             return;
         }
         
         NSURL *tentEntityURL = [self entityURLFromJSON:JSON];
         if (!tentEntityURL) {
             NSLog(@"Error: can't find a tent entity in the profile located at %@", [aHTTPClient.baseURL absoluteString]);
-            if (failure) {
-                failure(nil);   // TODO: throw an error
-            }
+            [self handleDiscoveryError:nil withBlock:failure];      // TODO: create NSError
             return;
         }
         
-        [[NSNotificationCenter defaultCenter] postNotificationName:TPTentServerDiscoveryCompleteNotification
+        [[NSNotificationCenter defaultCenter] postNotificationName:TPTentServerDiscoverySuccessNotification
                                                             object:nil
-                                                          userInfo:@{TPTentServerDiscoveryCompleteNotificationCanonicalServerURLKey: tentServerURL,
-                                                                     TPTentServerDiscoveryCompleteNotificationCanonicalEntityURLKey: tentEntityURL}];
+                                                          userInfo:@{TPTentServerDiscoverySuccessNotificationCanonicalServerURLKey: tentServerURL,
+                                                                     TPTentServerDiscoverySuccessNotificationCanonicalEntityURLKey: tentEntityURL}];
         if (success) {
             success(tentServerURL, tentEntityURL);
         }
         
     } failure:^(NSURLRequest *request, NSHTTPURLResponse *response, NSError *error, id JSON) {
-        if (failure) {
-            failure(error);
-        }
+        [self handleDiscoveryError:error withBlock:failure];
     }];
     
     [aHTTPClient enqueueHTTPRequestOperation:operation];
@@ -393,10 +382,9 @@ static NSString * const TPTentClientProfileInfoTypeBasic = @"https://tent.io/typ
 {
     NSArray *serverURLs = JSON[TPTentClientProfileInfoTypeCore][@"servers"];
     
-    // TODO: Support multiple servers
     NSString *tentServerURLString;
     if (serverURLs && [serverURLs count] > 0) {
-        tentServerURLString = serverURLs[0];
+        tentServerURLString = serverURLs[0];        // TODO: Support multiple servers
     }
 
     return [NSURL URLWithString:tentServerURLString];
@@ -405,6 +393,16 @@ static NSString * const TPTentClientProfileInfoTypeBasic = @"https://tent.io/typ
 - (NSURL *)entityURLFromJSON:(id)JSON
 {
     return [NSURL URLWithString:JSON[TPTentClientProfileInfoTypeCore][@"entity"]];
+}
+
+- (void)handleDiscoveryError:(NSError *)error withBlock:(void (^)(NSError *error))block
+{
+    [[NSNotificationCenter defaultCenter] postNotificationName:TPTentServerDiscoveryFailureNotification
+                                                        object:nil
+                                                      userInfo:nil];
+    if (block) {
+        block(error);
+    }
 }
 
 @end

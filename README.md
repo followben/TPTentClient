@@ -8,7 +8,7 @@ TPTentClient allows iOS applications to communicate with [tent.io](https://tent.
 
 ## Getting Started
 
-An example application is included in the repository, demonstrating server discovery, authorization, retrieval and posting of statuses. 
+An example application is included in the repository, demonstrating server discovery, authorization, retrieval and posting a status. 
 
 Don't forget to pull down AFNetworking and SSToolkit with `git submodule update --init` to run the example.
 
@@ -21,13 +21,14 @@ TPTentClient requires Xcode 4.4 and the [iOS 5.0](http://developer.apple.com/lib
 TPTentClient currently supports a small subset of what's possible with Tent. There's lots to do, including:
 
 - Documentation
-- Improved server discovery
+- Better error handling
+- Support for multiple Tent Servers on Discovery
 - Keychain support
 - Access to all [Tent API](https://tent.io/docs) endpoints
 - Enhanced delegate methods and notifications
 - Support for Mac OS X and Cocoa
 
-If you'd like to see a different feature or have found a bug, please [open an issue](https://github.com/followben/TPTentClient/issues). Alternatively, please [fork the repo](https://github.com/followben/TPTentClient/fork_select) and submit a pull request.
+If you'd like to see a different feature or have found a bug, please [open an issue](https://github.com/followben/TPTentClient/issues) or [fork the repo](https://github.com/followben/TPTentClient/fork_select) and submit a pull request. If you'd just like to contribute, search for "TODO:"!
 
 ## Credits
 

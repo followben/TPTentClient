@@ -61,7 +61,7 @@ NSString * const TPTentClientDidRegisterWithEntityNotificationURLKey = @"TPTentC
 #pragma mark Discovery
 
 - (void)discoverTentServerForEntityURL:(NSURL *)url
-                               success:(void (^)(NSURL *tentServerURL))success
+                               success:(void (^)(NSURL *canonicalServerURL, NSURL *canonicalEntityURL))success
                                failure:(void (^)(NSError *error))failure
 {
     AFHTTPClient *discoveryHTTPClient = [[AFHTTPClient alloc] initWithBaseURL:url];
@@ -188,7 +188,7 @@ NSString * const TPTentClientDidRegisterWithEntityNotificationURLKey = @"TPTentC
 #pragma mark Discovery
 
 - (void)headTentServerWithDiscoveryHTTPClient:(AFHTTPClient *)discoveryHTTPClient
-                                      success:(void (^)(NSURL *tentServerURL))success
+                                      success:(void (^)(NSURL *canonicalServerURL, NSURL *canonicalEntityURL))success
                                       failure:(void (^)(NSError *error))failure
 {
     NSMutableURLRequest *headRequest = [discoveryHTTPClient requestWithMethod:@"HEAD" path:@"/" parameters:nil];
@@ -202,7 +202,7 @@ NSString * const TPTentClientDidRegisterWithEntityNotificationURLKey = @"TPTentC
             return;
         }
         
-        [self getCanonicalAPIRootFromProfileURL:profileURL success:success failure:failure];
+        [self getCanonicalURLsFromProfileURL:profileURL success:success failure:failure];
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
         if (failure) {
             failure(error);
@@ -250,7 +250,7 @@ NSString * const TPTentClientDidRegisterWithEntityNotificationURLKey = @"TPTentC
 }
 
 - (void)getTentServerWithDiscoveryHTTPClient:(AFHTTPClient *)discoveryHTTPClient
-                                     success:(void (^)(NSURL *tentServerURL))success
+                                     success:(void (^)(NSURL *canonicalServerURL, NSURL *canonicalEntityURL))success
                                      failure:(void (^)(NSError *error))failure
 {
     [discoveryHTTPClient getPath:@"/" parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
@@ -265,7 +265,7 @@ NSString * const TPTentClientDidRegisterWithEntityNotificationURLKey = @"TPTentC
             return;
         }
         
-        [self getCanonicalAPIRootFromProfileURL:profileURL success:success failure:failure];
+        [self getCanonicalURLsFromProfileURL:profileURL success:success failure:failure];
         
     } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
         if (failure) {
@@ -319,19 +319,28 @@ NSString * const TPTentClientDidRegisterWithEntityNotificationURLKey = @"TPTentC
     return profileURL;
 }
 
-- (void)getCanonicalAPIRootFromProfileURL:(NSURL *)url
-                                  success:(void (^)(NSURL *tentServerURL))success
+- (void)getCanonicalURLsFromProfileURL:(NSURL *)url
+                                  success:(void (^)(NSURL *canonicalServerURL, NSURL *canonicalEntityURL))success
                                   failure:(void (^)(NSError *error))failure
 {
-    AFHTTPClient *canonicalAPIHTTPClient = [[TPTentHTTPClient alloc] initWithBaseURL:url];
+    AFHTTPClient *aHTTPClient = [[TPTentHTTPClient alloc] initWithBaseURL:url];
     
-    NSMutableURLRequest *getRequest = [canonicalAPIHTTPClient requestWithMethod:@"GET" path:[NSString string] parameters:nil];
+    NSMutableURLRequest *getRequest = [aHTTPClient requestWithMethod:@"GET" path:[NSString string] parameters:nil];
     
     AFJSONRequestOperation *operation = [AFJSONRequestOperation JSONRequestOperationWithRequest:getRequest success:^(NSURLRequest *getRequest, NSHTTPURLResponse *getResponse, id JSON) {
 
-        NSURL *tentServerURL = [self tentServerURLFromCanonicalAPIGetResponse:JSON];
+        NSURL *tentServerURL = [self serverURLFromJSON:JSON];
         if (!tentServerURL) {
-            NSLog(@"Error: can't find a tent server in the profile located at %@", [canonicalAPIHTTPClient.baseURL absoluteString]);
+            NSLog(@"Error: can't find a tent server in the profile located at %@", [aHTTPClient.baseURL absoluteString]);
+            if (failure) {
+                failure(nil);   // TODO: throw an error
+            }
+            return;
+        }
+        
+        NSURL *tentEntityURL = [self entityURLFromJSON:JSON];
+        if (!tentEntityURL) {
+            NSLog(@"Error: can't find a tent entity in the profile located at %@", [aHTTPClient.baseURL absoluteString]);
             if (failure) {
                 failure(nil);   // TODO: throw an error
             }
@@ -339,7 +348,7 @@ NSString * const TPTentClientDidRegisterWithEntityNotificationURLKey = @"TPTentC
         }
         
         if (success) {
-            success(tentServerURL);
+            success(tentServerURL, tentEntityURL);
         }
         
     } failure:^(NSURLRequest *request, NSHTTPURLResponse *response, NSError *error, id JSON) {
@@ -348,10 +357,10 @@ NSString * const TPTentClientDidRegisterWithEntityNotificationURLKey = @"TPTentC
         }
     }];
     
-    [canonicalAPIHTTPClient enqueueHTTPRequestOperation:operation];
+    [aHTTPClient enqueueHTTPRequestOperation:operation];
 }
 
-- (NSURL *)tentServerURLFromCanonicalAPIGetResponse:(id)JSON
+- (NSURL *)serverURLFromJSON:(id)JSON
 {
     NSArray *serverURLs = JSON[TPTentClientProfileInfoTypeCore][@"servers"];
     
@@ -362,6 +371,11 @@ NSString * const TPTentClientDidRegisterWithEntityNotificationURLKey = @"TPTentC
     }
 
     return [NSURL URLWithString:tentServerURLString];
+}
+
+- (NSURL *)entityURLFromJSON:(id)JSON
+{
+    return [NSURL URLWithString:JSON[TPTentClientProfileInfoTypeCore][@"entity"]];
 }
 
 @end

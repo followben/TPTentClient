@@ -37,7 +37,7 @@
 
 // Discovery
 - (void)discoverTentServerForEntityURL:(NSURL *)url
-                               success:(void (^)(NSURL *tentServerURL))success
+                               success:(void (^)(NSURL *canonicalServerURL, NSURL *canonicalEntityURL))success
                                failure:(void (^)(NSError *error))failure;
 
 // OAuth

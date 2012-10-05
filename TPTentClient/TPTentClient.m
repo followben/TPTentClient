@@ -85,7 +85,7 @@ NSString * const TPTentClientDidRegisterWithEntityNotificationURLKey = @"TPTentC
 }
 
 - (void)authorizeForTentServerURL:(NSURL *)url
-                          success:(void (^)(NSURL *tentServerURL))success
+                          success:(void (^)())success
                           failure:(void (^)(NSError *error))failure
 {
     if (self.httpClient.isRegisteredWithBaseURL && [self.httpClient.baseURL isEqual:url]) {

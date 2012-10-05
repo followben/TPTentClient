@@ -44,7 +44,7 @@
 - (BOOL)isAuthorizedForTentServer:(NSURL *)url;
 - (void)authorizeForTentServerURL:(NSURL *)url;
 - (void)authorizeForTentServerURL:(NSURL *)url
-                          success:(void (^)(NSURL *tentServerURL))success
+                          success:(void (^)())success
                           failure:(void (^)(NSError *error))failure;
 
 - (BOOL)handleOpenURL:(NSURL *)url;

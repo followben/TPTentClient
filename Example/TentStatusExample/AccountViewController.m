@@ -42,7 +42,7 @@
     
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(didAuthorizeWithEntity:)
-                                                 name:TPTentClientDidRegisterWithEntityNotification
+                                                 name:TPTentClientDidAuthorizeWithTentServerNotification
                                                object:nil];
 }
 

@@ -32,7 +32,9 @@ If you'd like to see a different feature or have found a bug, please [open an is
 
 ## Credits
 
-TPTentClient was created by [Ben Stovold](https://github.com/followben).
+TPTentClient created and maintained by [Ben Stovold](https://github.com/followben).
+
+Special thanks to [all contributors](https://github.com/followben/TPTentClient/graphs/contributors). 
 
 [Tent](https://github.com/tent) is the incredible work of the [Tent team](https://github.com/tent?tab=members), including [Daniel Siders](https://github.com/danielsiders) and [Jonathan Rudenberg](https://github.com/titanous).
 
@@ -41,11 +43,6 @@ AFNetworking and SSToolkit are thanks to [Mattt Thompson](http://github.com/matt
 ## Contact
 
 Follow Ben on Tent.is ([^followben](https://followben.tent.is)) or visit [thoughtfulpixel.com](http://thoughtfulpixel.com)
-
-### Creators
-
-[Ben Stovold](http://github.com/followben)  
-[^followben](https://followben.tent.is)
 
 ## License
 

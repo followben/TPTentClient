@@ -1,7 +1,7 @@
 # TPTentClient
 **Elegant tent.io handling for Cocoa Touch**
 
-> This project is still under early and active development.
+> As this project is under early and active development, method signatures and functionality is subject to change.
 > General feedback, bug reports and feature requests appreciated.
 
 TPTentClient allows iOS applications to communicate with [tent.io](https://tent.io) servers using the [Tent protocol](https://tent.io/docs).
@@ -22,10 +22,10 @@ TPTentClient currently supports a small subset of what's possible with Tent. The
 
 - Documentation
 - Better error handling
-- Support for multiple Tent Servers on Discovery
-- Keychain support
 - Access to all [Tent API](https://tent.io/docs) endpoints
-- Enhanced delegate methods and notifications
+- Support Tent Server fallback during Discovery
+- Support multiple authenticated servers at once 
+- Enhanced delegate methods
 - Support for Mac OS X and Cocoa
 
 If you'd like to see a different feature or have found a bug, please [open an issue](https://github.com/followben/TPTentClient/issues) or [fork the repo](https://github.com/followben/TPTentClient/fork_select) and submit a pull request. If you'd just like to contribute, search for "TODO:"!

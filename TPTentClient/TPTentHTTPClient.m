@@ -25,6 +25,7 @@
 #import "AFJSONRequestOperation.h"
 #import "NSURL+SSToolkitAdditions.h"
 #import <CommonCrypto/CommonHMAC.h>
+#import <Security/Security.h>
 
 #pragma mark - Functions and constants
 
@@ -56,8 +57,14 @@ static NSString *TPBase64EncodedStringFromData(NSData *data) {
     return [[NSString alloc] initWithData:mutableData encoding:NSASCIIStringEncoding];
 }
 
-static NSString *const kTPTentContentType = @"application/vnd.tent.v0+json";
+static NSString * const kTPTentContentType = @"application/vnd.tent.v0+json";
 
+typedef enum TPTentHTTPClientKeychainKey : NSUInteger {
+    TPTentHTTPClientClientId,
+    TPTentHTTPClientMacKeyId,
+    TPTentHTTPClientMacKey,
+    TPTentHTTPClientAccessToken
+} TPTentHTTPClientKeychainKey;
 
 #pragma mark - NSString extensions for HMACSHA256
 
@@ -85,12 +92,7 @@ static NSString *const kTPTentContentType = @"application/vnd.tent.v0+json";
 
 @interface TPTentHTTPClient ()
 
-@property (nonatomic, strong) NSString *tentClientId;
 @property (nonatomic, strong) NSString *tentState;
-@property (nonatomic, strong) NSString *tentMacAlgorithm;
-@property (nonatomic, strong) NSString *tentMacKeyId;
-@property (nonatomic, strong) NSString *tentMacKey;
-@property (nonatomic, strong) NSString *tentAccessToken;
 
 @property (nonatomic, copy) void (^registrationSuccessBlock) ();
 @property (nonatomic, copy) void (^registrationFailureBlock) (NSError *);
@@ -136,9 +138,9 @@ static NSString *const kTPTentContentType = @"application/vnd.tent.v0+json";
 
 #pragma mark - Public methods
 
-- (BOOL)isRegisteredWithBaseURL
+- (BOOL)hasAuthorizedWithBaseURL
 {
-    return self.tentAccessToken.length > 0;
+    return [self keychainKeyExistsForCurrentBaseURL:TPTentHTTPClientAccessToken];
 }
 
 - (void)registerForBaseURL
@@ -151,7 +153,7 @@ static NSString *const kTPTentContentType = @"application/vnd.tent.v0+json";
     self.registrationSuccessBlock = success;
     self.registrationFailureBlock = failure;
     
-    if ([self isRegisteredWithBaseURL]) {
+    if ([self hasAuthorizedWithBaseURL]) {
         NSLog(@"Token found - skipping App registration");
         return;
     }
@@ -178,12 +180,11 @@ static NSString *const kTPTentContentType = @"application/vnd.tent.v0+json";
     
     AFJSONRequestOperation *operation = [AFJSONRequestOperation JSONRequestOperationWithRequest:request success:^(NSURLRequest *request, NSHTTPURLResponse *response, id JSON) {
         
-        self.tentMacAlgorithm = JSON[@"mac_algorithm"];
-        self.tentMacKey = JSON[@"mac_key"];
-        self.tentMacKeyId = JSON[@"mac_key_id"];
-        self.tentClientId = JSON[@"id"];
+        [self setKeychainKey:TPTentHTTPClientMacKey value:JSON[@"mac_key"]];
+        [self setKeychainKey:TPTentHTTPClientMacKeyId value:JSON[@"mac_key_id"]];
+        [self setKeychainKey:TPTentHTTPClientClientId value:JSON[@"id"]];
         
-        NSDictionary *authRequestParams = @{@"client_id": self.tentClientId,
+        NSDictionary *authRequestParams = @{@"client_id":JSON[@"id"],
             @"tent_profile_info_types": @"all",
             @"tent_post_types": @"all",
             @"redirect_uri": [NSString stringWithFormat:@"%@://oauth", self.delegate.customURLScheme],
@@ -209,34 +210,32 @@ static NSString *const kTPTentContentType = @"application/vnd.tent.v0+json";
 {
     NSDictionary *queryDictionary = [url queryDictionary];
     
-    if (![self.tentState isEqualToString:queryDictionary[@"state"]]) {
+    if (![self.tentState isEqualToString:queryDictionary[@"state"]] || ![self keychainKeyExistsForCurrentBaseURL:TPTentHTTPClientClientId]) {
         return NO;
     }
     
     NSMutableURLRequest *request = [self requestWithMethod:@"POST"
-                                                      path:[NSString stringWithFormat:@"apps/%@/authorizations", self.tentClientId]
+                                                      path:[NSString stringWithFormat:@"apps/%@/authorizations", [self valueForKeychainKey:TPTentHTTPClientClientId]]
                                                 parameters:@{@"code": queryDictionary[@"code"], @"token_type": @"mac"}];
-    
-    __weak TPTentHTTPClient *weakSelf = self;
-    
+
     AFJSONRequestOperation *operation = [AFJSONRequestOperation JSONRequestOperationWithRequest:request success:^(NSURLRequest *request, NSHTTPURLResponse *response, id JSON) {
         if (JSON[@"access_token"]) {
             
-            weakSelf.tentAccessToken = JSON[@"access_token"];
-            weakSelf.tentMacKey = JSON[@"mac_key"];
+            [self setKeychainKey:TPTentHTTPClientAccessToken value:JSON[@"access_token"]];
+            [self setKeychainKey:TPTentHTTPClientMacKey value:JSON[@"mac_key"]];
             
-            if ([weakSelf.delegate respondsToSelector:@selector(httpClientDidRegisterWithBaseURL:)]) {
-                [weakSelf.delegate httpClientDidRegisterWithBaseURL:self];
+            if ([self.delegate respondsToSelector:@selector(httpClientDidRegisterWithBaseURL:)]) {
+                [self.delegate httpClientDidRegisterWithBaseURL:self];
             }
             
-            if (weakSelf.registrationSuccessBlock) {
-                weakSelf.registrationSuccessBlock();
+            if (self.registrationSuccessBlock) {
+                self.registrationSuccessBlock();
             }
             
         }
     } failure:^(NSURLRequest *request, NSHTTPURLResponse *response, NSError *error, id JSON) {
-        if (weakSelf.registrationFailureBlock) {
-            weakSelf.registrationFailureBlock(error);
+        if (self.registrationFailureBlock) {
+            self.registrationFailureBlock(error);
         }
     }];
     
@@ -249,7 +248,7 @@ static NSString *const kTPTentContentType = @"application/vnd.tent.v0+json";
 
 - (NSString *)authorizationHeaderForRequest:(NSURLRequest *)request
 {
-    if (self.tentAccessToken.length == 0 && self.tentMacKeyId.length == 0) {
+    if (![self keychainKeyExistsForCurrentBaseURL:TPTentHTTPClientAccessToken] && ![self keychainKeyExistsForCurrentBaseURL:TPTentHTTPClientMacKeyId]) {
         return nil;
     }
     
@@ -270,8 +269,12 @@ static NSString *const kTPTentContentType = @"application/vnd.tent.v0+json";
     }
     [normalisedRequestString appendFormat:@"%@\n\n", port];
     
-    NSString *mac = [NSString HMACSHA256EncodedStringWithString:normalisedRequestString key:self.tentMacKey];
-    NSString *authorizationId = (self.tentAccessToken.length > 0) ? self.tentAccessToken : self.tentMacKeyId;
+    NSString *mac = [NSString HMACSHA256EncodedStringWithString:normalisedRequestString key:[self valueForKeychainKey:TPTentHTTPClientMacKey]];
+    BOOL foundAccessToken;
+    NSString *authorizationId = [self valueForKeychainKey:TPTentHTTPClientAccessToken found:&foundAccessToken];
+    if (!foundAccessToken) {
+        [self valueForKeychainKey:TPTentHTTPClientMacKeyId];
+    }
     
     return [NSString stringWithFormat:@"MAC id=\"%@\", ts=\"%@\", nonce=\"%@\", mac=\"%@\"", authorizationId, timeStamp, nonce, mac];
 }
@@ -297,7 +300,72 @@ static NSString *const kTPTentContentType = @"application/vnd.tent.v0+json";
     return NO;
 }
 
+#pragma mark Keychain
 
+- (NSMutableDictionary *)queryAttributesForKeychainKey:(TPTentHTTPClientKeychainKey)key
+{
+    NSMutableDictionary *queryDictionary = [NSMutableDictionary dictionary];
+    [queryDictionary setObject:(__bridge id)kSecClassKey forKey:(__bridge id)kSecClass];
+    
+    // Incorporate baseURL into keyname to support storing creds for multiple tent servers
+    NSString *tag = [NSString stringWithFormat:@"com.thoughtfulpixel.tptenthttpclient.keychainkey.%d.%@", key, [self.baseURL absoluteString]];
+    
+    CFDataRef tagRef = (__bridge CFDataRef)[tag dataUsingEncoding:NSUTF8StringEncoding];
+    [queryDictionary setObject:(__bridge id)tagRef forKey:(__bridge id)kSecAttrApplicationTag];
+    
+    return queryDictionary;
+}
 
+- (NSString *)valueForKeychainKey:(TPTentHTTPClientKeychainKey)key
+{
+    BOOL found;
+    NSString *value = [self valueForKeychainKey:key found:&found];
+    if (!found) {
+        return nil;
+    }
+    return value;
+}
+
+- (NSString *)valueForKeychainKey:(TPTentHTTPClientKeychainKey)key found:(BOOL *)found
+{
+    NSMutableDictionary *attributesToQuery = [self queryAttributesForKeychainKey:key];
+    [attributesToQuery setObject:(__bridge id)kCFBooleanTrue forKey:(__bridge id<NSCopying>)(kSecReturnData)];
+
+    CFTypeRef resultRef = NULL;
+    OSStatus status = SecItemCopyMatching((__bridge CFDictionaryRef)attributesToQuery, &resultRef);
+    *found = status != errSecItemNotFound;
+    
+    return [[NSString alloc] initWithData:(__bridge_transfer NSData *)resultRef encoding:NSUTF8StringEncoding];
+}
+
+- (BOOL)keychainKeyExistsForCurrentBaseURL:(TPTentHTTPClientKeychainKey)key
+{
+    BOOL found;
+    [self valueForKeychainKey:key found:&found];
+    return found;
+}
+
+- (BOOL)setKeychainKey:(TPTentHTTPClientKeychainKey)key value:(NSString *)value
+{
+    [self deleteKeychainKey:key];
+    
+    NSMutableDictionary *attributes = [self queryAttributesForKeychainKey:key];
+    
+    CFDataRef dataRef = (__bridge CFDataRef)[value dataUsingEncoding:NSUTF8StringEncoding];
+    [attributes setObject:(__bridge id)dataRef forKey:(__bridge id)kSecValueData];
+    
+    [attributes setObject:(__bridge id)kSecAttrAccessibleWhenUnlocked forKey:(__bridge id)kSecAttrAccessible];
+    
+    OSStatus status = SecItemAdd((__bridge CFDictionaryRef)attributes, NULL);
+    return status == noErr;
+}
+
+- (BOOL)deleteKeychainKey:(TPTentHTTPClientKeychainKey)key
+{
+    NSMutableDictionary *attributesToQuery = [self queryAttributesForKeychainKey:key];
+    
+    OSStatus status = SecItemDelete((__bridge CFDictionaryRef)attributesToQuery);
+    return status == noErr;
+}
 
 @end

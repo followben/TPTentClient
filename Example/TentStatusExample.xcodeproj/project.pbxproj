@@ -34,6 +34,7 @@
 		9F24FEF3161AB0C500A93048 /* UIImageView+AFNetworking.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F24FEEA161AB0C500A93048 /* UIImageView+AFNetworking.m */; };
 		9F24FEF6161AB1DA00A93048 /* TentStatusClient.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F24FEF5161AB1D900A93048 /* TentStatusClient.m */; };
 		9F24FF01161AC6CF00A93048 /* TPTentHTTPClient.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F24FF00161AB80E00A93048 /* TPTentHTTPClient.m */; };
+		9F6BE96716228E69000B45A7 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9F6BE96616228E69000B45A7 /* Security.framework */; };
 		9F83DF20161BC0AC0078F22C /* AccountViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F83DF1F161BC0AC0078F22C /* AccountViewController.m */; };
 		9F859A84161BD4D300CE3388 /* NSURL+TPEquivalence.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F859A83161BD4D300CE3388 /* NSURL+TPEquivalence.m */; };
 		9F859A8C161D0C0700CE3388 /* NewStatusPostViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F859A8B161D0C0700CE3388 /* NewStatusPostViewController.m */; };
@@ -91,6 +92,7 @@
 		9F24FEF5161AB1D900A93048 /* TentStatusClient.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TentStatusClient.m; sourceTree = "<group>"; };
 		9F24FEFF161AB80E00A93048 /* TPTentHTTPClient.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TPTentHTTPClient.h; sourceTree = "<group>"; };
 		9F24FF00161AB80E00A93048 /* TPTentHTTPClient.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TPTentHTTPClient.m; sourceTree = "<group>"; };
+		9F6BE96616228E69000B45A7 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		9F83DF1E161BC0AC0078F22C /* AccountViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AccountViewController.h; sourceTree = "<group>"; };
 		9F83DF1F161BC0AC0078F22C /* AccountViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AccountViewController.m; sourceTree = "<group>"; };
 		9F859A82161BD4D300CE3388 /* NSURL+TPEquivalence.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSURL+TPEquivalence.h"; sourceTree = "<group>"; };
@@ -108,6 +110,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9F6BE96716228E69000B45A7 /* Security.framework in Frameworks */,
 				9F24FC86161AAC0100A93048 /* UIKit.framework in Frameworks */,
 				9F24FC88161AAC0100A93048 /* Foundation.framework in Frameworks */,
 				9F24FC8A161AAC0100A93048 /* CoreGraphics.framework in Frameworks */,
@@ -138,6 +141,7 @@
 		9F24FC84161AAC0100A93048 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				9F6BE96616228E69000B45A7 /* Security.framework */,
 				9F24FC85161AAC0100A93048 /* UIKit.framework */,
 				9F24FC87161AAC0100A93048 /* Foundation.framework */,
 				9F24FC89161AAC0100A93048 /* CoreGraphics.framework */,

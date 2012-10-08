@@ -36,9 +36,9 @@
 @property (nonatomic, strong) NSDictionary *scopes;
 
 // Discovery
-- (void)discoverTentServerForEntityURL:(NSURL *)url
-                               success:(void (^)(NSURL *canonicalServerURL, NSURL *canonicalEntityURL))success
-                               failure:(void (^)(NSError *error))failure;
+- (void)discoverCanonicalURLsForEntityURL:(NSURL *)url
+                                  success:(void (^)(NSURL *canonicalServerURL, NSURL *canonicalEntityURL))success
+                                  failure:(void (^)(NSError *error))failure;
 
 // OAuth
 - (BOOL)isAuthorizedForTentServer:(NSURL *)url;

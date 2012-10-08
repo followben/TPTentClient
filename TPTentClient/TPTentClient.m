@@ -70,9 +70,9 @@ static NSString * const TPTentClientProfileInfoTypeBasic = @"https://tent.io/typ
 
 #pragma mark Discovery
 
-- (void)discoverTentServerForEntityURL:(NSURL *)url
-                               success:(void (^)(NSURL *canonicalServerURL, NSURL *canonicalEntityURL))success
-                               failure:(void (^)(NSError *error))failure
+- (void)discoverCanonicalURLsForEntityURL:(NSURL *)url
+                                  success:(void (^)(NSURL *canonicalServerURL, NSURL *canonicalEntityURL))success
+                                  failure:(void (^)(NSError *error))failure
 {
     AFHTTPClient *discoveryHTTPClient = [[AFHTTPClient alloc] initWithBaseURL:url];
     [self headTentServerWithDiscoveryHTTPClient:discoveryHTTPClient success:success failure:failure];
@@ -82,11 +82,12 @@ static NSString * const TPTentClientProfileInfoTypeBasic = @"https://tent.io/typ
 
 - (BOOL)isAuthorizedForTentServer:(NSURL *)url
 {
-    if (self.httpClient && [self.httpClient.baseURL isEquivalent:url] && [self.httpClient isRegisteredWithBaseURL]) {
-        return YES;
+    if (!self.httpClient) {
+        self.httpClient = [[TPTentHTTPClient alloc] initWithBaseURL:url];
+        self.httpClient.delegate = self;
     }
     
-    return NO;
+    return [self.httpClient hasAuthorizedWithBaseURL];
 }
 
 - (void)authorizeForTentServerURL:(NSURL *)url
@@ -98,11 +99,11 @@ static NSString * const TPTentClientProfileInfoTypeBasic = @"https://tent.io/typ
                           success:(void (^)())success
                           failure:(void (^)(NSError *error))failure
 {
-    if (self.httpClient.isRegisteredWithBaseURL && [self.httpClient.baseURL isEqual:url]) {
+    if ([self.httpClient.baseURL isEquivalent:url] && [self.httpClient hasAuthorizedWithBaseURL] ) {
         return;
     }
     
-    if (![self.httpClient.baseURL isEqual:url]) {
+    if (![self.httpClient.baseURL isEquivalent:url]) {
         self.httpClient = [[TPTentHTTPClient alloc] initWithBaseURL:url];
         self.httpClient.delegate = self;
     }

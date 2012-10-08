@@ -50,6 +50,9 @@
 - (BOOL)handleOpenURL:(NSURL *)url;
 
 // Retrieving Representations
+- (void)getProfileRepresentationForEntityURL:(NSURL *)entityURL
+                                     success:(void (^)(NSDictionary *basicInfo))success
+                                     failure:(void (^)(NSError *error))failure;
 - (void)getPostRepresentationsWithSuccess:(void (^)(NSArray *statusRepresentations))success
                                   failure:(void (^)(NSError *error))failure;
 
@@ -60,16 +63,19 @@
 - (void)postPostWithType:(NSString *)postType permissions:(NSDictionary *)permissions content:(NSDictionary *)content
                  success:(void (^)(void))success
                  failure:(void (^)(NSError *error))failure;
+
 @end
 
-// Tent post types
+// Supported tent types
+//extern NSString * const TPTentClientProfileInfoTypeCore;
+extern NSString * const TPTentClientProfileInfoTypeBasic;
 extern NSString * const TPTentClientPostTypeStatus;
-extern NSString * const TPTentClientPostTypeEssay;
-extern NSString * const TPTentClientPostTypePhoto;
-extern NSString * const TPTentClientPostTypeAlbum;
-extern NSString * const TPTentClientPostTypeRepost;
-extern NSString * const TPTentClientPostTypeProfileModification;
-extern NSString * const TPTentClientPostTypeDeleteNotification;
+//extern NSString * const TPTentClientPostTypeEssay;
+//extern NSString * const TPTentClientPostTypePhoto;
+//extern NSString * const TPTentClientPostTypeAlbum;
+//extern NSString * const TPTentClientPostTypeRepost;
+//extern NSString * const TPTentClientPostTypeProfileModification;
+//extern NSString * const TPTentClientPostTypeDeleteNotification;
 
 // Notifications and UserInfo dict keys
 extern NSString * const TPTentServerDiscoveryCheckingHeadResponseForProfileLinkNotification;

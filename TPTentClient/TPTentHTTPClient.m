@@ -200,7 +200,8 @@ typedef enum TPTentHTTPClientKeychainKey : NSUInteger {
         }
         
     } failure:^(NSURLRequest *request, NSHTTPURLResponse *response, NSError *error, id JSON) {
-        NSLog(@"Something went very wrong");
+        if (failure)
+            failure(error);
     }];
     
     [self enqueueHTTPRequestOperation:operation];

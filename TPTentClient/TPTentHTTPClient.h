@@ -29,7 +29,7 @@
 
 @property (nonatomic, weak) id<TPTentHTTPDelegate> delegate;
 
-- (BOOL)isRegisteredWithBaseURL;
+- (BOOL)hasAuthorizedWithBaseURL;
 - (void)registerForBaseURL;
 - (void)registerForBaseURLWithSuccess:(void (^)())success
                               failure:(void (^)(NSError *error))failure;

@@ -66,22 +66,18 @@
     
     [textField resignFirstResponder];
     
-    if ([self.entityURL isEquivalent:entityURL] &&
-        [[TentStatusClient sharedClient] isAuthorizedForTentServer:self.tentServerURL]) {
+    if ([self.entityURL isEquivalent:entityURL] && [[TentStatusClient sharedClient] isAuthorizedForTentServer:self.tentServerURL]) {
         [self showTimeline];
         return YES;
     }
-    
-    self.entityURL = entityURL;
-    
-    [[TentStatusClient sharedClient] discoverTentServerForEntityURL:self.entityURL success:^(NSURL *canonicalServerURL, NSURL *canonicalEntityURL) {
+
+    [[TentStatusClient sharedClient] discoverCanonicalURLsForEntityURL:entityURL success:^(NSURL *canonicalServerURL, NSURL *canonicalEntityURL) {
         self.entityURL = canonicalEntityURL;
-        if ([self.tentServerURL isEquivalent:canonicalServerURL] &&
-            [[TentStatusClient sharedClient] isAuthorizedForTentServer:self.tentServerURL]) {
+        self.tentServerURL = canonicalServerURL;
+        if ([[TentStatusClient sharedClient] isAuthorizedForTentServer:canonicalServerURL]) {
             [self showTimeline];
         } else {
-            self.tentServerURL = canonicalServerURL;
-            [[TentStatusClient sharedClient] authorizeForTentServerURL:self.tentServerURL];
+            [[TentStatusClient sharedClient] authorizeForTentServerURL:canonicalServerURL];
         }
     } failure:nil];
 

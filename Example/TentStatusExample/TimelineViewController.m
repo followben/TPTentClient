@@ -92,15 +92,13 @@
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    // TODO: Fix this
-    StatusPostCell *cell = [tableView dequeueReusableCellWithIdentifier:@"StatusPostCell"];
-    StatusPost *statusPost = (StatusPost *)[self.statusArray objectAtIndex:indexPath.row];
-    cell.statusLabel.text = statusPost.status;
-    CGFloat cellHeight = cell.frame.size.height;
-    CGFloat labelHeight = 19.f;
-    CGFloat adjustedlabelHeight = [cell.statusLabel sizeThatFits:CGSizeMake(280.f, CGFLOAT_MAX)].height;
-    CGFloat adjustedCellHeight = cellHeight + (adjustedlabelHeight - labelHeight);
-    return adjustedCellHeight;
+
+    NSString *cellText = ((StatusPost *)[self.statusArray objectAtIndex:indexPath.row]).status;
+    UIFont *cellFont = [UIFont fontWithName:@"Helvetica Neue" size:14.0f];
+    CGSize constraintSize = CGSizeMake(280.0f, MAXFLOAT);
+    CGSize labelSize = [cellText sizeWithFont:cellFont constrainedToSize:constraintSize lineBreakMode:NSLineBreakByTruncatingTail];
+
+    return labelSize.height + 86.0f;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section

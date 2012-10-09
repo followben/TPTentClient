@@ -16,6 +16,8 @@ Don't forget to pull down AFNetworking and SSToolkit with `git submodule update 
 
 TPTentClient requires Xcode 4.4 and the [iOS 5.0](http://developer.apple.com/library/ios/#releasenotes/General/WhatsNewIniPhoneOS/Articles/iOS5.html) SDK, as well as [AFNetworking](https://github.com/afnetworking/afnetworking) 1.0RC3 and [SSToolkit](https://github.com/samsoffes/sstoolkit) 1.0.1.
 
+As TPTentClient persists credentials in the Keychain, you'll also need to have the [Security Framework](http://developer.apple.com/library/ios/#documentation/Security/Reference/SecurityFrameworkReference/_index.html#//apple_ref/doc/uid/TP40004330) linked to your target.
+
 ## Next Steps
 
 TPTentClient currently supports a small subset of what's possible with Tent. There's lots to do, including:

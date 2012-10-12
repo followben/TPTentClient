@@ -274,7 +274,7 @@ typedef enum TPTentHTTPClientKeychainKey : NSUInteger {
     BOOL foundAccessToken;
     NSString *authorizationId = [self valueForKeychainKey:TPTentHTTPClientAccessToken found:&foundAccessToken];
     if (!foundAccessToken) {
-        [self valueForKeychainKey:TPTentHTTPClientMacKeyId];
+        authorizationId = [self valueForKeychainKey:TPTentHTTPClientMacKeyId];
     }
     
     return [NSString stringWithFormat:@"MAC id=\"%@\", ts=\"%@\", nonce=\"%@\", mac=\"%@\"", authorizationId, timeStamp, nonce, mac];

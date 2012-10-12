@@ -38,7 +38,7 @@
 {
     __weak NewStatusPostViewController *weakSelf = self;
     
-    [[TentStatusClient sharedClient] postStatusWithText:self.textView.text permissions:nil success:^{
+    [self.tentClient postStatusWithText:self.textView.text permissions:nil success:^{
         if ([weakSelf.delegate respondsToSelector:@selector(newStatusPostViewController:didPostStatus:)]) {
             [weakSelf.delegate newStatusPostViewController:self didPostStatus:YES];
         }

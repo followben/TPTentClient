@@ -25,12 +25,12 @@
 #import "AccountViewController.h"
 #import "TentStatusClient.h"
 #import "NSURL+TPEquivalence.h"
+#import "TimelineViewController.h"
 
 @interface AccountViewController () <UITextFieldDelegate>
 
-@property (nonatomic, strong) IBOutlet UITextField *entityURIField;
-@property (nonatomic, strong) NSURL *entityURL;
-@property (nonatomic, strong) NSURL *tentServerURL;
+@property (nonatomic, strong) IBOutlet UIView *footerView;
+@property (nonatomic, weak) IBOutlet UITextField *entityURIField;
 
 @end
 
@@ -41,9 +41,10 @@
     [super viewDidLoad];
     
     [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(didAuthorizeWithEntity:)
-                                                 name:TPTentClientDidAuthorizeWithTentServerNotification
+                                             selector:@selector(handleOpenURLNotification:)
+                                                 name:@"AppDelegateReceivedOpenURL"
                                                object:nil];
+    self.footerView.hidden = YES;
 }
 
 - (void)viewWillAppear:(BOOL)animated
@@ -57,41 +58,57 @@
     [self.entityURIField becomeFirstResponder];
 }
 
+- (IBAction)forgetAuthDetails:(id)sender
+{
+    [self.tentClient removeAuthTokens];
+    self.footerView.hidden = YES;
+    self.entityURIField.text = @"https://";
+}
+
 - (BOOL)textFieldShouldReturn:(UITextField *)textField
 {
-    NSURL *entityURL = [NSURL URLWithString:textField.text];
-    if (!entityURL) {
+    NSURL *entity = [NSURL URLWithString:textField.text];
+    if (!entity) {
         return NO;
     }
     
     [textField resignFirstResponder];
     
-    if ([self.entityURL isEquivalent:entityURL] && [[TentStatusClient sharedClient] isAuthorizedForTentServer:self.tentServerURL]) {
-        [self showTimeline];
-        return YES;
+    if (!self.tentClient || ![self.tentClient.entity isEquivalent:entity]) {
+        self.tentClient = [[TentStatusClient alloc] initWithEntity:entity];
     }
-
-    [[TentStatusClient sharedClient] discoverCanonicalURLsForEntityURL:entityURL success:^(NSURL *canonicalServerURL, NSURL *canonicalEntityURL) {
-        self.entityURL = canonicalEntityURL;
-        self.tentServerURL = canonicalServerURL;
-        if ([[TentStatusClient sharedClient] isAuthorizedForTentServer:canonicalServerURL]) {
+    
+    [self.tentClient checkAuthTokensWithBlock:^(BOOL authInfoFound) {
+        if (authInfoFound) {
             [self showTimeline];
         } else {
-            [[TentStatusClient sharedClient] authorizeForTentServerURL:canonicalServerURL];
+            [self.tentClient authorizeWithEntitySuccess:^{
+                [self showTimeline];
+            } failure:nil];
         }
-    } failure:nil];
+    }];
 
     return YES;
 }
 
-- (void)didAuthorizeWithEntity:(NSDictionary *)notification
+- (void)handleOpenURLNotification:(NSNotification *)note
 {
-    [self showTimeline];
+    NSURL *oAuthURL = (NSURL *)[note.userInfo objectForKey:@"urlKey"];
+    [self.tentClient handleOpenURL:oAuthURL];
 }
 
 - (void)showTimeline
 {
     [self performSegueWithIdentifier:@"ShowTimeline" sender:self];
+    self.footerView.hidden = NO;
+}
+
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
+{
+    if ([segue.identifier isEqualToString:@"ShowTimeline"]) {
+        TimelineViewController *vc = (TimelineViewController *)[segue destinationViewController];
+        vc.tentClient = self.tentClient;
+    }
 }
 
 - (void)dealloc

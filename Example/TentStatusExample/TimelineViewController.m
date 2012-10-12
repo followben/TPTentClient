@@ -55,7 +55,7 @@
 {
     __weak TimelineViewController *weakSelf = self;
     
-    [[TentStatusClient sharedClient] getPostRepresentationsWithSuccess:^(NSArray *representations) {
+    [self.tentClient getPostRepresentationsWithSuccess:^(NSArray *representations) {
         
         NSMutableArray *postArray = [NSMutableArray arrayWithCapacity:[representations count]];
         for (NSDictionary *representation in representations) {
@@ -84,6 +84,7 @@
 {
     if ([segue.identifier isEqualToString:@"ShowNewStatusPost"]) {
         NewStatusPostViewController *vc = (NewStatusPostViewController *)[segue destinationViewController];
+        vc.tentClient = self.tentClient;
         vc.delegate = self;
     }
 }

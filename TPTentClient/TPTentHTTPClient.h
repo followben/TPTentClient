@@ -25,6 +25,10 @@
 
 @protocol TPTentHTTPDelegate;
 
+// TPTentHTTPClient sits underneath TPTentClient servicing calls to it's tent server.
+// This code is considered TPTentClient internals - subject to frequent and undocumented changes.
+// It is not meant to be called by client applications and will be treated accordingly.
+
 @interface TPTentHTTPClient : AFHTTPClient
 
 @property (nonatomic, weak) id<TPTentHTTPDelegate> delegate;
@@ -35,6 +39,8 @@
                               failure:(void (^)(NSError *error))failure;
 
 - (BOOL)handleOpenURL:(NSURL *)url;
+
+- (void)forgetAuthDetails;
 
 @end
 

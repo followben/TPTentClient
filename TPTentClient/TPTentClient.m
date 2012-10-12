@@ -59,7 +59,8 @@ NSString * const TPTentClientErrorDomain = @"TPTentClientErrorDomain";
 
 @interface TPTentClient ()
 
-@property (nonatomic, strong) TPTentHTTPClient *primaryHTTPClient;
+@property (nonatomic, strong, readwrite) NSURL *defaultEntity;
+@property (nonatomic, strong, readwrite) TPTentHTTPClient *tentHTTPClient;
 
 @end
 
@@ -68,56 +69,93 @@ NSString * const TPTentClientErrorDomain = @"TPTentClientErrorDomain";
 
 #pragma mark - Public methods
 
++ (TPTentClient *)clientWithEntity:(NSURL *)entityURL {
+    return [[self alloc] initWithEntity:entityURL];
+}
+
+- (id)initWithEntity:(NSURL *)entityURL {
+    self = [super init];
+    if (!self) {
+        return nil;
+    }
+    
+    _defaultEntity = entityURL;
+    
+    return self;
+}
+
 #pragma mark Discovery
 
-- (void)discoverCanonicalURLsForEntityURL:(NSURL *)url
-                                  success:(void (^)(NSURL *canonicalServerURL, NSURL *canonicalEntityURL))success
+- (void)discoverCanonicalsAndCreateHTTPClient:(NSURL *)url
+                                  success:(void (^)())success
                                   failure:(void (^)(NSError *error))failure
 {
     AFHTTPClient *discoveryHTTPClient = [[AFHTTPClient alloc] initWithBaseURL:url];
-    [self headTentServerWithDiscoveryHTTPClient:discoveryHTTPClient success:success failure:failure];
+    [self headTentServerWithDiscoveryHTTPClient:discoveryHTTPClient success:^(NSURL *canonicalServerURL, NSURL *canonicalEntityURL) {
+        self.defaultEntity = canonicalEntityURL;
+        self.tentHTTPClient = [[TPTentHTTPClient alloc] initWithBaseURL:canonicalServerURL];
+        self.tentHTTPClient.delegate = self;
+        if (success)
+            success();
+    } failure:^(NSError *error) {
+        if (failure) {
+            failure(error);
+        }
+    }];
 }
 
 #pragma mark OAuth
 
-- (BOOL)isAuthorizedForTentServer:(NSURL *)url
+- (void)checkAuthTokensWithBlock:(void (^)(BOOL tokensFound))block
 {
-    if (!self.primaryHTTPClient) {
-        self.primaryHTTPClient = [[TPTentHTTPClient alloc] initWithBaseURL:url];
-        self.primaryHTTPClient.delegate = self;
-    }
-    
-    return [self.primaryHTTPClient hasAuthorizedWithBaseURL];
-}
-
-- (void)authorizeForTentServerURL:(NSURL *)url
-{
-    [self authorizeForTentServerURL:url success:nil failure:nil];
-}
-
-- (void)authorizeForTentServerURL:(NSURL *)url
-                          success:(void (^)())success
-                          failure:(void (^)(NSError *error))failure
-{
-    if ([self.primaryHTTPClient.baseURL isEquivalent:url] && [self.primaryHTTPClient hasAuthorizedWithBaseURL] ) {
+    if (!block) {
         return;
     }
     
-    if (![self.primaryHTTPClient.baseURL isEquivalent:url]) {
-        self.primaryHTTPClient = [[TPTentHTTPClient alloc] initWithBaseURL:url];
-        self.primaryHTTPClient.delegate = self;
+    if (self.tentHTTPClient) {
+        block([self.tentHTTPClient hasAuthorizedWithBaseURL]);
+        return;
     }
     
-    [[NSNotificationCenter defaultCenter] postNotificationName:TPTentClientWillAuthorizeWithTentServerNotification
-                                                        object:nil
-                                                      userInfo:@{TPTentClientAuthorizingWithTentServerURLKey: url}];
+    [self discoverCanonicalsAndCreateHTTPClient:self.defaultEntity success:^() {
+        block([self.tentHTTPClient hasAuthorizedWithBaseURL]);
+    } failure:^(NSError *error) {
+        NSLog(@"Discovery error when checking auth details: %@", error);
+        block(NO);
+    }];
+}
+
+- (void)authorizeWithEntitySuccess:(void (^)())success
+                           failure:(void (^)(NSError *error))failure
+{    
+    void (^doAuth)(void) = ^ {
+        [[NSNotificationCenter defaultCenter] postNotificationName:TPTentClientWillAuthorizeWithTentServerNotification
+                                                            object:nil
+                                                          userInfo:@{TPTentClientAuthorizingWithTentServerURLKey: self.tentHTTPClient.baseURL}];
+        [self.tentHTTPClient registerForBaseURLWithSuccess:success failure:failure];
+    };
     
-    [self.primaryHTTPClient registerForBaseURLWithSuccess:success failure:failure];
+    if (self.tentHTTPClient) {
+        doAuth();
+        return;
+    }
+    
+    [self discoverCanonicalsAndCreateHTTPClient:self.defaultEntity success:^() {
+        doAuth();
+    } failure:^(NSError *error) {
+        if (failure)
+            failure(error);
+    }];
+}
+
+- (void)removeAuthTokens
+{
+    [self.tentHTTPClient forgetAuthDetails];
 }
 
 - (BOOL)handleOpenURL:(NSURL *)url
 {
-    return [self.primaryHTTPClient handleOpenURL:url];
+    return [self.tentHTTPClient handleOpenURL:url];
 }
 
 #pragma mark Retrieving Represenations
@@ -125,7 +163,7 @@ NSString * const TPTentClientErrorDomain = @"TPTentClientErrorDomain";
 - (void)getPostRepresentationsWithSuccess:(void (^)(NSArray *statusRepresentations))success
                                   failure:(void (^)(NSError *error))failure
 {
-    NSMutableURLRequest *request = [self.primaryHTTPClient requestWithMethod:@"GET" path:@"posts" parameters:nil];
+    NSMutableURLRequest *request = [self.tentHTTPClient requestWithMethod:@"GET" path:@"posts" parameters:nil];
     
     AFJSONRequestOperation *operation = [AFJSONRequestOperation JSONRequestOperationWithRequest:request success:^(NSURLRequest *request, NSHTTPURLResponse *response, id JSON) {
         if (success) {
@@ -137,7 +175,7 @@ NSString * const TPTentClientErrorDomain = @"TPTentClientErrorDomain";
         }
     }];
     
-    [self.primaryHTTPClient enqueueHTTPRequestOperation:operation];
+    [self.tentHTTPClient enqueueHTTPRequestOperation:operation];
 }
 
 - (void)getProfileRepresentationForEntityURL:(NSURL *)entityURL
@@ -209,7 +247,7 @@ NSString * const TPTentClientErrorDomain = @"TPTentClientErrorDomain";
     
     NSDictionary *params = @{@"type": postType, @"publishedAt": timeStamp, @"permissions": permissions, @"content": content};
     
-    NSMutableURLRequest *request = [self.primaryHTTPClient requestWithMethod:@"POST" path:@"posts" parameters:params];
+    NSMutableURLRequest *request = [self.tentHTTPClient requestWithMethod:@"POST" path:@"posts" parameters:params];
     
     AFJSONRequestOperation *operation = [AFJSONRequestOperation JSONRequestOperationWithRequest:request success:^(NSURLRequest *request, NSHTTPURLResponse *response, id JSON) {
         if (success) {
@@ -221,7 +259,7 @@ NSString * const TPTentClientErrorDomain = @"TPTentClientErrorDomain";
         }
     }];
     
-    [self.primaryHTTPClient enqueueHTTPRequestOperation:operation];
+    [self.tentHTTPClient enqueueHTTPRequestOperation:operation];
 }
 
 #pragma mark - TPTentHTTPClientDelegate conformance

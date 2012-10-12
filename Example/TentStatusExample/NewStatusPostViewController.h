@@ -10,7 +10,11 @@
 
 @protocol NewStatusPostViewControllerDelegate;
 
+@class TentStatusClient;
+
 @interface NewStatusPostViewController : UIViewController
+
+@property (nonatomic, strong) TentStatusClient *tentClient;
 
 @property (nonatomic, weak) id<NewStatusPostViewControllerDelegate> delegate;
 

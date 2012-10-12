@@ -24,6 +24,10 @@
 
 #import <UIKit/UIKit.h>
 
+@class TentStatusClient;
+
 @interface TimelineViewController : UITableViewController
+
+@property (nonatomic, strong) TentStatusClient *tentClient;
 
 @end

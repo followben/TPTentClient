@@ -138,6 +138,14 @@ typedef enum TPTentHTTPClientKeychainKey : NSUInteger {
 
 #pragma mark - Public methods
 
+- (void)forgetAuthDetails
+{
+    [self deleteKeychainKey:TPTentHTTPClientAccessToken];
+    [self deleteKeychainKey:TPTentHTTPClientMacKeyId];
+    [self deleteKeychainKey:TPTentHTTPClientMacKey];
+    [self deleteKeychainKey:TPTentHTTPClientClientId];
+}
+
 - (BOOL)hasAuthorizedWithBaseURL
 {
     return [self keychainKeyExistsForCurrentBaseURL:TPTentHTTPClientAccessToken];

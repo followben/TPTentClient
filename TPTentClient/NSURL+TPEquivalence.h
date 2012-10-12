@@ -25,6 +25,7 @@
 
 @interface NSURL (TPEquivalence)
 
+// To work around the shortcomings of NSURL's isEqual
 - (BOOL)isEquivalent:(NSURL *)aURL;
 
 @end

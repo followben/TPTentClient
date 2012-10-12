@@ -26,6 +26,4 @@
 
 @interface TentStatusClient : TPTentClient
 
-+ (TentStatusClient *)sharedClient;
-
 @end

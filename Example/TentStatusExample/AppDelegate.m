@@ -34,12 +34,15 @@
     
     return YES;
 }
-							
-- (BOOL)application:(UIApplication *)application handleOpenURL:(NSURL *)url
-{
-    return [[TentStatusClient sharedClient] handleOpenURL:url];
-}
 
+- (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation
+{
+    // Assuming here that it's an oAuth return URL. A real app might validate and/ or use a different method to notify the tent client of an oAuth callback
+    [[NSNotificationCenter defaultCenter] postNotificationName:@"AppDelegateReceivedOpenURL"
+                                                        object:self
+                                                      userInfo:@{@"urlKey": url}];
+    return YES;
+}
 
 
 @end

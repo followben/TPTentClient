@@ -27,55 +27,141 @@
 
 @interface TPTentClient : NSObject <TPTentHTTPDelegate>
 
-@property (nonatomic, weak) id<TPTentClientDelegate> delegate;
-
+/**
+ TPTentHTTPDelegate protocol properties. Subclasses should override these properties to configure appropriate values for the tent application using the TPTentClient library.
+ **/
 @property (nonatomic, strong) NSString *customURLScheme;
 @property (nonatomic, strong) NSString *appName;
 @property (nonatomic, strong) NSString *appDescription;
 @property (nonatomic, strong) NSURL *appWebsiteURL;
 @property (nonatomic, strong) NSDictionary *scopes;
 
-// Discovery
-- (void)discoverCanonicalURLsForEntityURL:(NSURL *)url
-                                  success:(void (^)(NSURL *canonicalServerURL, NSURL *canonicalEntityURL))success
-                                  failure:(void (^)(NSError *error))failure;
+/**
+ The main tent entity. All operations will be performed on the primary (first) server in this entity's profile. Note that this entity may differ from that provided in the designated initialiser or factory, i.e. if discovery has been performed, this property will return the canonical entity.
+ TODO: Handle multiple/ fallback tent servers for the entity
+ **/
+@property (nonatomic, strong, readonly) NSURL *entity;
 
-// OAuth
-- (BOOL)isAuthorizedForTentServer:(NSURL *)url;
-- (void)authorizeForTentServerURL:(NSURL *)url;
-- (void)authorizeForTentServerURL:(NSURL *)url
-                          success:(void (^)())success
-                          failure:(void (^)(NSError *error))failure;
+/**
+ The delegate. At present the delegate protocol provides very few hooks into TPTentClient logic, so it's not very useful.
+ TODO: Improve delegate protocol functionality to match notifications
+ **/
+@property (nonatomic, weak) id<TPTentClientDelegate> delegate;
 
+
+///---------------------------------------------
+/// @name Creating and Initializing Tent Clients
+///---------------------------------------------
+
+/**
+ Creates and initializes an `TPTentClient` object with the specified entity.
+ 
+ @param entityURL The URL of the base Tent Entity. This argument must not be nil.
+ 
+ @return The newly-initialized Tent client
+ */
++ (TPTentClient *)clientWithEntity:(NSURL *)entityURL;
+
+/**
+ Initializes an `TPTentClient` object with the specified entity.
+ 
+ @param entityURL The URL of the base Tent Entity. This argument must not be nil.
+ 
+ @discussion This is the designated initializer.
+ 
+ @return The newly-initialized Tent client
+ */
+- (id)initWithEntity:(NSURL *)entityURL;
+
+
+///---------------------------------------------
+/// @name Authorization
+///---------------------------------------------
+
+/**
+ Checks the keychain for previous authorization tokens matching the entity's primary tent server.
+ 
+ @discussion If canonical entity and server URLs have not yet been discovered, that is performed here also.
+ 
+ @return YES if tokens exist for the entity's primary server.
+ 
+ @warning This method does does not validate that auth tokens are valid, simply that they exist (e.g. they may have been revoked). This should be enough for login/ account authorisation purposes however: if any operations on the entity's primary server return a 403, authorisation is re-initiated.
+ */
+- (void)checkAuthTokensWithBlock:(void (^)(BOOL tokensFound))block;
+
+/**
+ Removes any authorization tokens matching the entity's primary tent server from the keychain.
+ 
+ @discussion This does not revoke or remove authorisations on the server, only the client.
+ 
+ TODO: currently this method removes all tokens and subsequent calls to auth will be like a new app. Logic needs to change so subsequent calls only re-auth and obtain new secrets, keeping app id etc. the same.
+ */
+- (void)removeAuthTokens;
+
+/**
+ Attempts to authorize the client with the entity's primary server.
+ 
+ @discussion If canonical entity and server URLs have not yet been discovered, that is performed here also. Only those permissions specified on in the scopes member property are requested.
+ */
+- (void)authorizeWithEntitySuccess:(void (^)())success
+                           failure:(void (^)(NSError *error))failure;
+
+/**
+ URL handler for returning from oAuth redirects
+ 
+ @discussion If Authorization is required, TPTentClient will open mobile safari. Client applications are expected to configure a customURLScheme in the application's plist matching that specified in the member variable of the same name in order to respond to the redirect. Any calls to that scheme should be forwarded to this method such that the tent client can continue with the authorization process.
+ 
+ @return YES if the URL could be handled.
+ */
 - (BOOL)handleOpenURL:(NSURL *)url;
 
-// Retrieving Representations
+
+///---------------------------------------------
+/// @name Retrieving Representations
+///---------------------------------------------
+
+/**
+TODO: document
+ */
 - (void)getProfileRepresentationForEntityURL:(NSURL *)entityURL
                                      success:(void (^)(NSDictionary *basicInfo))success
                                      failure:(void (^)(NSError *error))failure;
+/**
+ TODO: document
+ */
 - (void)getPostRepresentationsWithSuccess:(void (^)(NSArray *statusRepresentations))success
                                   failure:(void (^)(NSError *error))failure;
 
-// Creating Resources
+
+///---------------------------------------------
+/// @name Creating Resources
+///---------------------------------------------
+
+/**
+ TODO: document
+ */
 - (void)postStatusWithText:(NSString *)text permissions:(NSDictionary *)permissions
                    success:(void (^)(void))success
                    failure:(void (^)(NSError *error))failure;
+/**
+ TODO: document
+ */
 - (void)postPostWithType:(NSString *)postType permissions:(NSDictionary *)permissions content:(NSDictionary *)content
                  success:(void (^)(void))success
                  failure:(void (^)(NSError *error))failure;
 
 @end
 
-// Supported tent types
-//extern NSString * const TPTentClientProfileInfoTypeCore;
+// Tent types
+extern NSString * const TPTentClientProfileInfoTypeCore;
 extern NSString * const TPTentClientProfileInfoTypeBasic;
 extern NSString * const TPTentClientPostTypeStatus;
-//extern NSString * const TPTentClientPostTypeEssay;
-//extern NSString * const TPTentClientPostTypePhoto;
-//extern NSString * const TPTentClientPostTypeAlbum;
-//extern NSString * const TPTentClientPostTypeRepost;
-//extern NSString * const TPTentClientPostTypeProfileModification;
-//extern NSString * const TPTentClientPostTypeDeleteNotification;
+extern NSString * const TPTentClientPostTypeEssay;
+extern NSString * const TPTentClientPostTypePhoto;
+extern NSString * const TPTentClientPostTypeAlbum;
+extern NSString * const TPTentClientPostTypeRepost;
+extern NSString * const TPTentClientPostTypeProfileModification;
+extern NSString * const TPTentClientPostTypeDeleteNotification;
 
 // Notifications and UserInfo dict keys
 extern NSString * const TPTentServerDiscoveryCheckingHeadResponseForProfileLinkNotification;
